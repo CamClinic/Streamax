@@ -13,8 +13,6 @@
             --border: #334155;
             --text-primary: #f8fafc;
             --text-secondary: #94a3b8;
-            --btn-yes: #10b981;
-            --btn-no: #ef4444;
             --card-resolve: #0284c7;
         }
 
@@ -43,9 +41,8 @@
             width: 100%;
             max-width: 600px;
             padding: 2.5rem;
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3), 0 8px 10px -6px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
             position: relative;
-            overflow: hidden;
         }
 
         .wizard-container::before {
@@ -62,7 +59,6 @@
             font-size: 1.4rem;
             font-weight: 700;
             margin-bottom: 0.5rem;
-            letter-spacing: -0.025em;
             background: linear-gradient(to right, #ffffff, var(--accent-blue));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
@@ -80,7 +76,6 @@
 
         .step-card.active {
             display: block;
-            animation: fadeIn 0.4s ease forwards;
         }
 
         .question-text {
@@ -90,6 +85,42 @@
             margin-bottom: 1.5rem;
         }
 
+        /* Standard Radio Option Styles */
+        .options-list {
+            margin-bottom: 1.5rem;
+        }
+
+        .option-item {
+            display: flex;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border);
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 0.75rem;
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+
+        .option-item:hover {
+            background: rgba(255, 255, 255, 0.07);
+        }
+
+        .option-item input[type="radio"] {
+            margin-right: 12px;
+            width: 18px;
+            height: 18px;
+            accent-color: var(--accent-blue);
+            cursor: pointer;
+        }
+
+        .option-item label {
+            cursor: pointer;
+            font-weight: 500;
+            flex-grow: 1;
+        }
+
+        /* Action Buttons */
         .btn-group {
             display: flex;
             gap: 1rem;
@@ -97,60 +128,32 @@
         }
 
         .btn {
-            flex: 1;
-            padding: 0.85rem;
+            padding: 0.85rem 1.5rem;
             border-radius: 8px;
             font-weight: 600;
             font-size: 0.95rem;
             cursor: pointer;
-            transition: all 0.2s ease;
-            text-align: center;
             border: none;
+            transition: all 0.2s ease;
         }
 
-        .btn-primary {
+        .btn-submit {
             background-color: var(--accent-blue);
             color: #0f172a;
+            flex-grow: 2;
         }
 
-        .btn-primary:hover {
+        .btn-submit:hover {
             background-color: #7dd3fc;
             box-shadow: 0 0 12px var(--accent-glow);
         }
 
-        .btn-yes {
-            background-color: rgba(16, 185, 129, 0.1);
-            border: 1px solid var(--btn-yes);
-            color: #34d399;
-        }
-
-        .btn-yes:hover {
-            background-color: var(--btn-yes);
-            color: white;
-        }
-
-        .btn-no {
-            background-color: rgba(239, 68, 68, 0.1);
-            border: 1px solid var(--btn-no);
-            color: #f87171;
-        }
-
-        .btn-no:hover {
-            background-color: var(--btn-no);
-            color: white;
-        }
-
-        .btn-secondary {
+        .btn-back {
             background-color: #334155;
             color: var(--text-primary);
-            margin-top: 1.5rem;
-            font-size: 0.85rem;
-            padding: 0.5rem 1rem;
-            width: auto;
-            display: inline-block;
         }
 
-        .btn-secondary:hover {
+        .btn-back:hover {
             background-color: #475569;
         }
 
@@ -166,12 +169,6 @@
         .resolution-box h4 {
             color: var(--accent-blue);
             margin-bottom: 0.5rem;
-            font-size: 1rem;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(8px); }
-            to { opacity: 1; transform: translateY(0); }
         }
     </style>
 </head>
@@ -179,25 +176,43 @@
 
     <div class="wizard-container">
         <h2 class="header-title">Streamax Interactive Troubleshooter</h2>
-        <p class="subtitle">Follow the dynamic branch tree to pinpoint the device state</p>
+        <p class="subtitle">Select an option below and click submit to proceed</p>
 
-        <!-- Step 1: Install Type -->
+        <!-- Step 1: Device Setup Type -->
         <div class="step-card active" id="step-start">
             <p class="question-text">What type of device setup is this?</p>
+            <div class="options-list">
+                <div class="option-item">
+                    <input type="radio" id="opt-fresh" name="setup_type" value="fresh" checked>
+                    <label for="opt-fresh">Fresh Install</label>
+                </div>
+                <div class="option-item">
+                    <input type="radio" id="opt-old" name="setup_type" value="old">
+                    <label for="opt-old">Old Install</label>
+                </div>
+            </div>
             <div class="btn-group">
-                <button class="btn btn-primary" onclick="goToStep('step-fresh')">Fresh Install</button>
-                <button class="btn btn-primary" onclick="goToStep('step-old')">Old Install</button>
+                <button class="btn btn-submit" onclick="processStart()">Submit Plan</button>
             </div>
         </div>
 
         <!-- Step 2: Fresh Install SIM Status -->
         <div class="step-card" id="step-fresh">
             <p class="question-text">Is the camera SIM active?</p>
-            <div class="btn-group">
-                <button class="btn btn-yes" onclick="goToStep('step-installer')">Yes</button>
-                <button class="btn btn-no" onclick="goToStep('res-success-dept')">No</button>
+            <div class="options-list">
+                <div class="option-item">
+                    <input type="radio" id="sim-yes" name="sim_status" value="yes" checked>
+                    <label for="sim-yes">Yes</label>
+                </div>
+                <div class="option-item">
+                    <input type="radio" id="sim-no" name="sim_status" value="no">
+                    <label for="sim-no">No</label>
+                </div>
             </div>
-            <button class="btn btn-secondary" onclick="goToStep('step-start')">← Back</button>
+            <div class="btn-group">
+                <button class="btn btn-back" onclick="goToStep('step-start')">Back</button>
+                <button class="btn btn-submit" onclick="processFresh()">Submit Selection</button>
+            </div>
         </div>
 
         <!-- Resolution: Success Dept -->
@@ -206,17 +221,28 @@
                 <h4>Required Action</h4>
                 <p>Connect with the <strong>Success Department</strong> immediately to activate the SIM card configuration.</p>
             </div>
-            <button class="btn btn-secondary" onclick="goToStep('step-fresh')">← Back</button>
+            <div class="btn-group">
+                <button class="btn btn-back" onclick="goToStep('step-fresh')">Back</button>
+            </div>
         </div>
 
         <!-- Step 3: Installer Check -->
         <div class="step-card" id="step-installer">
             <p class="question-text">Is the device installed by an authorized installer?</p>
-            <div class="btn-group">
-                <button class="btn btn-yes" onclick="goToStep('step-portal')">Yes</button>
-                <button class="btn btn-no" onclick="goToStep('res-bill')">No</button>
+            <div class="options-list">
+                <div class="option-item">
+                    <input type="radio" id="inst-yes" name="inst_status" value="yes" checked>
+                    <label for="inst-yes">Yes</label>
+                </div>
+                <div class="option-item">
+                    <input type="radio" id="inst-no" name="inst_status" value="no">
+                    <label for="inst-no">No</label>
+                </div>
             </div>
-            <button class="btn btn-secondary" onclick="goToStep('step-fresh')">← Back</button>
+            <div class="btn-group">
+                <button class="btn btn-back" onclick="goToStep('step-fresh')">Back</button>
+                <button class="btn btn-submit" onclick="processInstaller()">Submit Selection</button>
+            </div>
         </div>
 
         <!-- Resolution: Check Bill -->
@@ -225,17 +251,28 @@
                 <h4>Required Action</h4>
                 <p>Please check with <strong>Bill</strong> to verify the current installation status.</p>
             </div>
-            <button class="btn btn-secondary" onclick="goToStep('step-installer')">← Back</button>
+            <div class="btn-group">
+                <button class="btn btn-back" onclick="goToStep('step-installer')">Back</button>
+            </div>
         </div>
 
         <!-- Step 4: Backend Portal Check -->
         <div class="step-card" id="step-portal">
             <p class="question-text">Is the device successfully added to both the backend portal and the customer portal?</p>
-            <div class="btn-group">
-                <button class="btn btn-yes" onclick="goToStep('step-lights')">Yes</button>
-                <button class="btn btn-no" onclick="goToStep('res-zenduit')">No</button>
+            <div class="options-list">
+                <div class="option-item">
+                    <input type="radio" id="portal-yes" name="portal_status" value="yes" checked>
+                    <label for="portal-yes">Yes</label>
+                </div>
+                <div class="option-item">
+                    <input type="radio" id="portal-no" name="portal_status" value="no">
+                    <label for="portal-no">No</label>
+                </div>
             </div>
-            <button class="btn btn-secondary" onclick="goToStep('step-installer')">← Back</button>
+            <div class="btn-group">
+                <button class="btn btn-back" onclick="goToStep('step-installer')">Back</button>
+                <button class="btn btn-submit" onclick="processPortal()">Submit Selection</button>
+            </div>
         </div>
 
         <!-- Resolution: Zenduit Ticket -->
@@ -244,11 +281,10 @@
                 <h4>Required Action</h4>
                 <p>Raise a ticket with <strong>Zenduit</strong> to add the device configuration onto the backend system and onto the company customer portal.</p>
             </div>
-            <button class="btn btn-secondary" onclick="goToStep('step-portal')">← Back</button>
+            <div class="btn-group">
+                <button class="btn btn-back" onclick="goToStep('step-portal')">Back</button>
+            </div>
         </div>
 
         <!-- Step 5: Device Indicator Lights -->
         <div class="step-card" id="step-lights">
-            <p class="question-text">Is the device getting any illumination/light indicators directly on the unit?</p>
-            <div class="btn-group">
-                <button class="btn btn-yes" onclick="goToStep('step-globe')">Yes</button>

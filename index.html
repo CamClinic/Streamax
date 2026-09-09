@@ -3,241 +3,187 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Streamax Diagnostic Workflow</title>
+    <title>Streamax Diagnostic Guide</title>
     <style>
-        :root {
-            --bg-dark: #0f172a;
-            --card-bg: #1e293b;
-            --accent-blue: #38bdf8;
-            --border: #334155;
-            --text-primary: #f8fafc;
-            --text-secondary: #94a3b8;
-            --card-resolve: #0284c7;
-        }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-        }
-
-        body {
-            background-color: var(--bg-dark);
-            color: var(--text-primary);
-            min-height: 100vh;
+        body { 
+            font-family: Arial, sans-serif; 
+            padding: 40px; 
+            background: #0f172a; 
+            color: #f8fafc;
             display: flex;
-            flex-direction: column;
-            align-items: center;
             justify-content: center;
-            padding: 1.5rem;
+            align-items: center;
+            min-height: 90vh;
         }
-
-        .wizard-container {
-            background-color: var(--card-bg);
-            border: 1px solid var(--border);
-            border-radius: 16px;
+        .card { 
+            background: #1e293b; 
+            padding: 40px; 
+            border-radius: 12px; 
+            max-width: 550px; 
             width: 100%;
-            max-width: 600px;
-            padding: 2.5rem;
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.3); 
+            border: 1px solid #334155;
             position: relative;
         }
-
-        .wizard-container::before {
+        .card::before {
             content: '';
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 4px;
-            background: linear-gradient(90deg, var(--accent-blue), #818cf8);
+            background: linear-gradient(90deg, #38bdf8, #818cf8);
+            border-radius: 12px 12px 0 0;
         }
-
-        .header-title {
-            font-size: 1.4rem;
-            font-weight: 700;
-            margin-bottom: 0.5rem;
-            background: linear-gradient(to right, #ffffff, var(--accent-blue));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        .subtitle {
-            color: var(--text-secondary);
-            font-size: 0.9rem;
-            margin-bottom: 2rem;
-        }
-
-        .step-card {
-            display: none;
-        }
-
-        .step-card.active {
-            display: block;
-        }
-
-        .question-text {
-            font-size: 1.15rem;
-            font-weight: 600;
+        h2 { 
+            font-size: 1.35rem;
             line-height: 1.5;
-            margin-bottom: 1.5rem;
-        }
-
-        .btn-group {
-            display: flex;
-            gap: 1rem;
-            margin-top: 1.5rem;
-        }
-
-        .btn {
-            flex: 1;
-            padding: 0.85rem;
-            border-radius: 8px;
+            margin-bottom: 25px; 
             font-weight: 600;
-            font-size: 0.95rem;
-            cursor: pointer;
-            text-align: center;
-            border: none;
-            transition: opacity 0.2s ease;
         }
-
-        .btn:hover {
-            opacity: 0.9;
-        }
-
-        .btn-primary {
-            background-color: var(--accent-blue);
+        button { 
+            padding: 12px 24px; 
+            margin-right: 12px; 
+            margin-bottom: 12px;
+            cursor: pointer; 
+            background: #38bdf8;
             color: #0f172a;
+            border: none;
+            border-radius: 6px;
+            font-weight: bold;
+            font-size: 0.95rem;
+            transition: background 0.2s;
         }
-
-        .btn-secondary {
-            background-color: #334155;
-            color: var(--text-primary);
-            margin-top: 1.5rem;
-            font-size: 0.85rem;
-            padding: 0.5rem 1rem;
-            width: auto;
-            display: inline-block;
+        button:hover {
+            background: #7dd3fc;
         }
-
-        .resolution-box {
-            background-color: rgba(2, 132, 199, 0.1);
-            border-left: 4px solid var(--card-resolve);
-            padding: 1.25rem;
-            border-radius: 0 8px 8px 0;
-            margin-top: 1rem;
-            line-height: 1.6;
+        .btn-restart {
+            background: #475569;
+            color: #f8fafc;
         }
-
-        .resolution-box h4 {
-            color: var(--accent-blue);
-            margin-bottom: 0.5rem;
+        .btn-restart:hover {
+            background: #64748b;
         }
     </style>
 </head>
 <body>
 
-    <div class="wizard-container">
-        <h2 class="header-title">Streamax Interactive Troubleshooter</h2>
-        <p class="subtitle">Select an option to trace your troubleshooting workflow</p>
-
-        <!-- Step 1 -->
-        <div class="step-card active" id="step-start">
-            <p class="question-text">What type of device setup is this?</p>
-            <div class="btn-group">
-                <button class="btn btn-primary" onclick="goToStep('step-fresh')">Fresh Install</button>
-                <button class="btn btn-primary" onclick="goToStep('step-old')">Old Install</button>
-            </div>
+    <div class="card" id="app">
+        <h2 id="question-text">Loading question...</h2>
+        <div id="answers">
+            <!-- Buttons are generated dynamically by JavaScript here -->
         </div>
+    </div>
 
-        <!-- Step 2 -->
-        <div class="step-card" id="step-fresh">
-            <p class="question-text">Is the camera SIM active?</p>
-            <div class="btn-group">
-                <button class="btn btn-primary" onclick="goToStep('step-installer')">Yes</button>
-                <button class="btn btn-primary" onclick="goToStep('res-success-dept')">No</button>
-            </div>
-            <button class="btn btn-secondary" onclick="goToStep('step-start')">← Back</button>
-        </div>
+    <script>
+        // Streamax step logic routing configuration
+        const flow = {
+            q1: {
+                text: "What type of device setup is this?",
+                yes: "q2_fresh", // Maps to Fresh Install selection
+                no: "q2_old",    // Maps to Old Install selection
+                labels: { yes: "Fresh Install", no: "Old Install" }
+            },
+            q2_fresh: {
+                text: "Is the camera SIM active?",
+                yes: "q3_installer",
+                no: "res_success_dept"
+            },
+            res_success_dept: { 
+                text: "Resolution: Connect with Success Department to activate the SIM.", 
+                yes: null, 
+                no: null 
+            },
+            q3_installer: {
+                text: "Is the device installed by an installer?",
+                yes: "q4_portal",
+                no: "res_bill"
+            },
+            res_bill: { 
+                text: "Resolution: Check with Bill for installation status.", 
+                yes: null, 
+                no: null 
+            },
+            q4_portal: {
+                text: "Is the device added to the backend portal and on the customer portal?",
+                yes: "q5_lights_fresh",
+                no: "res_zenduit"
+            },
+            res_zenduit: { 
+                text: "Resolution: Raise a ticket with Zenduit to add the device on backend and customer portal.", 
+                yes: null, 
+                no: null 
+            },
+            q5_lights_fresh: {
+                text: "Is the device getting any light on the device?",
+                yes: "q6_globe",
+                no: "res_verify_connections"
+            },
+            res_verify_connections: { 
+                text: "Resolution: Ask the customer to verify the connection.", 
+                yes: null, 
+                no: null 
+            },
+            q6_globe: {
+                text: "Is there a globe light showing any light or not?",
+                yes: "res_globe_yes",
+                no: "res_globe_no"
+            },
+            res_globe_yes: { 
+                text: "Resolution: Diagnostic completed. Globe light active.", 
+                yes: null, 
+                no: null 
+            },
+            res_globe_no: { 
+                text: "Resolution: Diagnostic completed. Globe light inactive.", 
+                yes: null, 
+                no: null 
+            },
+            
+            // Old Install branch path
+            q2_old: {
+                text: "Is the device getting any light on the device?",
+                yes: "q6_globe",
+                no: "res_verify_connections"
+            }
+        };
 
-        <!-- Res 1 -->
-        <div class="step-card" id="res-success-dept">
-            <div class="resolution-box">
-                <h4>Required Action</h4>
-                <p>Connect with the <strong>Success Department</strong> immediately to activate the SIM card.</p>
-            </div>
-            <button class="btn btn-secondary" onclick="goToStep('step-fresh')">← Back</button>
-        </div>
+        let currentStep = 'q1';
 
-        <!-- Step 3 -->
-        <div class="step-card" id="step-installer">
-            <p class="question-text">Is the device installed by an authorized installer?</p>
-            <div class="btn-group">
-                <button class="btn btn-primary" onclick="goToStep('step-portal')">Yes</button>
-                <button class="btn btn-primary" onclick="goToStep('res-bill')">No</button>
-            </div>
-            <button class="btn btn-secondary" onclick="goToStep('step-fresh')">← Back</button>
-        </div>
+        function render() {
+            const currentObj = flow[currentStep];
+            document.getElementById('question-text').innerText = currentObj.text;
+            
+            const answersDiv = document.getElementById('answers');
+            
+            if (currentObj.yes === null) {
+                // Leaf resolution end of decision node path reached
+                answersDiv.innerHTML = `<button class="btn-restart" onclick="resetFlow()">Start Over</button>`;
+            } else {
+                // Fetch dynamic text string overrides for selection buttons if present
+                const textYes = (currentObj.labels && currentObj.labels.yes) ? currentObj.labels.yes : "Yes";
+                const textNo = (currentObj.labels && currentObj.labels.no) ? currentObj.labels.no : "No";
+                
+                answersDiv.innerHTML = `
+                    <button onclick="handleAnswer('yes')">${textYes}</button>
+                    <button onclick="handleAnswer('no')">${textNo}</button>
+                `;
+            }
+        }
 
-        <!-- Res 2 -->
-        <div class="step-card" id="res-bill">
-            <div class="resolution-box">
-                <h4>Required Action</h4>
-                <p>Please check with <strong>Bill</strong> to verify the current installation status.</p>
-            </div>
-            <button class="btn btn-secondary" onclick="goToStep('step-installer')">← Back</button>
-        </div>
+        function handleAnswer(choice) {
+            const currentObj = flow[currentStep];
+            currentStep = choice === 'yes' ? currentObj.yes : currentObj.no;
+            render();
+        }
 
-        <!-- Step 4 -->
-        <div class="step-card" id="step-portal">
-            <p class="question-text">Is the device successfully added to the backend portal and customer portal?</p>
-            <div class="btn-group">
-                <button class="btn btn-primary" onclick="goToStep('step-lights')">Yes</button>
-                <button class="btn btn-primary" onclick="goToStep('res-zenduit')">No</button>
-            </div>
-            <button class="btn btn-secondary" onclick="goToStep('step-installer')">← Back</button>
-        </div>
+        function resetFlow() {
+            currentStep = 'q1';
+            render();
+        }
 
-        <!-- Res 3 -->
-        <div class="step-card" id="res-zenduit">
-            <div class="resolution-box">
-                <h4>Required Action</h4>
-                <p>Raise a ticket with <strong>Zenduit</strong> to add the device to the backend and customer portal.</p>
-            </div>
-            <button class="btn btn-secondary" onclick="goToStep('step-portal')">← Back</button>
-        </div>
-
-        <!-- Step 5 -->
-        <div class="step-card" id="step-lights">
-            <p class="question-text">Is the device getting any illumination or light indicators directly on the unit?</p>
-            <div class="btn-group">
-                <button class="btn btn-primary" onclick="goToStep('step-globe')">Yes</button>
-                <button class="btn btn-primary" onclick="goToStep('res-connections')">No</button>
-            </div>
-            <button class="btn btn-secondary" onclick="goToStep('step-portal')">← Back</button>
-        </div>
-
-        <!-- Res 4 -->
-        <div class="step-card" id="res-connections">
-            <div class="resolution-box">
-                <h4>Required Action</h4>
-                <p>Instruct the customer to verify all physical connections, grounds, and line cables.</p>
-            </div>
-            <button class="btn btn-secondary" onclick="goToStep('step-lights')">← Back</button>
-        </div>
-
-        <!-- Step 6 -->
-        <div class="step-card" id="step-globe">
-            <p class="question-text">Is there a specific globe light indicator showing any light activity?</p>
-            <div class="btn-group">
-                <button class="btn btn-primary" onclick="goToStep('res-globe-active')">Yes</button>
-                <button class="btn btn-primary" onclick="goToStep('res-globe-inactive')">No</button>
-            </div>
-            <button class="btn btn-secondary" onclick="goToStep('step-lights')">← Back</button>
-        </div>
-
-        <!-- Globe Active -->
-        <div class="step-card" id="res-globe-active">
-            <div class="resolution-box">
-                <h4>Diagnostic Complete</h4>
+        // Initialize display configuration state
+        render();
+    </script>
+</body>
+</html>

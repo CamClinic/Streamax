@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Streamax Comprehensive Troubleshooting Guide</title>
+    <title>Streamax Diagnostic Guide</title>
     <style>
         body { 
             font-family: Arial, sans-serif; 
@@ -90,12 +90,11 @@
     <div class="card" id="app">
         <h2 id="question-text">Loading diagnostic steps...</h2>
         <div id="answers" class="btn-container">
-            <!-- Dynamic interactive choice actions populate here -->
+            <!-- Buttons are generated here dynamically -->
         </div>
     </div>
 
     <script>
-        // Data map tracking the entire visual architecture from the workflow diagram
         const flow = {
             start: {
                 text: "Select the primary Streamax Device Issue category:",
@@ -108,13 +107,11 @@
                 ]
             },
             
-            // Outer Flowchart Categories End Nodes
             res_camera_quality: { text: "Resolution: Inspect camera focus lenses, wipe external housing surfaces clean, and check microphone gains inside diagnostic parameters.", choices: null },
             res_rules: { text: "Resolution: Verify event triggers, reset cloud rule mapping templates, and push updated parameters to the terminal unit.", choices: null },
             res_recording: { text: "Resolution: Check localized storage status indicators, verify SD/HDD write formatting parameters, and inspect partition errors.", choices: null },
-            res_aux: { text: "Resolution: Check specialized multi-channel input connections, auxiliary power link lines, and peripheral camera configuration setups.", choices: null },
+            res_aux: { text: "Resolution: Check specialized multi-channel input connections, auxiliary power lines, and peripheral camera configuration setups.", choices: null },
 
-            // Main Diagnostic Tree Stack
             q_device_lights: {
                 text: "Does the device show any Light?",
                 choices: [
@@ -136,6 +133,10 @@
                     { text: "No", next: "res_verify_connections" }
                 ]
             },
+            res_verify_connections: { 
+                text: "Resolution: Ask the client/driver to comprehensively verify all physical device cable connections, grounds, and terminal power lines.", 
+                choices: null 
+            },
             q_sim_active: {
                 text: "Is the internal SIM profile verified as active?",
                 choices: [
@@ -143,7 +144,7 @@
                     { text: "No", next: "res_escalate_success_manager" }
                 ]
             },
-            res_escalate_success_manager: { text: "Resolution: Escalate / Transfer technical support ticket internally with Success Manager.", choices: null },
+            res_escalate_success_manager: { text: "Resolution: Escalate / Transfer technical support ticket internally with Success Manager to activate the SIM profile.", choices: null },
 
             q_sim_swap: {
                 text: "Can the client test a swap with an alternative known active SIM?",
@@ -176,7 +177,7 @@
                 ]
             },
             res_installer_visit: { text: "Resolution: Raise formal Installer Visit scheduling request to inspect the onsite physical device parameters.", choices: null },
-            res_zenduit_ticket: { text: "Resolution: Raise formal Support Ticket with Zenduit to append and link the hardware profile on the management backend and font-end interfaces.", choices: null }
+            res_zenduit_ticket: { text: "Resolution: Raise formal Support Ticket with Zenduit to append and link the hardware profile on the management backend and front-end interfaces.", choices: null }
         };
 
         let currentStep = 'start';
@@ -186,7 +187,6 @@
             const displayEl = document.getElementById('question-text');
             const answersDiv = document.getElementById('answers');
             
-            // Check if node is a resolution card leaf node end step
             if (currentObj.choices === null) {
                 displayEl.innerHTML = `<div class="resolution-box">${currentObj.text}</div>`;
                 answersDiv.innerHTML = `<button class="btn-restart" onclick="resetFlow()">← Restart Diagnostic Process</button>`;
@@ -194,9 +194,8 @@
                 displayEl.innerText = currentObj.text;
                 let htmlContent = "";
                 
-                // Map array options accurately into explicit separate selection actions
-                currentObj.choices.forEach(function(item, idx) {
-                    htmlContent += `<button onclick="handleSelection(${idx})">${item.text}</button>`;
+                currentObj.choices.forEach(function(item, index) {
+                    htmlContent += `<button onclick="handleSelection(${index})">${item.text}</button>`;
                 });
                 answersDiv.innerHTML = htmlContent;
             }
@@ -211,3 +210,9 @@
         function resetFlow() {
             currentStep = 'start';
             render();
+        }
+
+        render();
+    </script>
+</body>
+</html>

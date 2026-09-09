@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Team Troubleshooting Guide</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 40px; background: #f4f4f9; }
+        .card { background: white; padding: 30px; border-radius: 8px; max-width: 500px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        button { padding: 10px 20px; margin-right: 10px; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+    <div class="card" id="app">
+        <h2 id="question-text">Loading question...</h2>
+        <div id="answers">
+            <button onclick="handleAnswer('yes')">Yes</button>
+            <button onclick="handleAnswer('no')">No</button>
+        </div>
+    </div>
+
+    <script>
+        // Define your questions and where Yes/No should lead
+        const flow = {
+            q1: {
+                text: "Is the user seeing a 500 server error?",
+                yes: "q2_server",
+                no: "q2_client"
+            },
+            q2_server: {
+                text: "Have you tried restarting the backend container?",
+                yes: "resolve_restart",
+                no: "escalate_dev"
+            },
+            q2_client: {
+                text: "Did clearing the browser cache fix the issue?",
+                yes: "resolve_cache",
+                no: "escalate_support"
+            },
+            resolve_restart: { text: "Resolution: Issue resolved by container restart.", yes: null, no: null },
+            escalate_dev: { text: "Resolution: Escalate to the DevOps team.", yes: null, no: null },
+            resolve_cache: { text: "Resolution: Issue resolved by clearing cache.", yes: null, no: null },
+            escalate_support: { text: "Resolution: Create a high-priority ticket.", yes: null, no: null }
+        };
+
+        let currentStep = 'q1';
+
+        function render() {
+            const currentObj = flow[currentStep];
+            document.getElementById('question-text').innerText = currentObj.text;
+            
+            const answersDiv = document.getElementById('answers');
+            if (currentObj.yes === null) {
+                // End of tree
+                answersDiv.innerHTML = `<button onclick="resetFlow()">Start Over</button>`;
+            } else {
+                answersDiv.innerHTML = `
+                    <button onclick="handleAnswer('yes')">Yes</button>
+                    <button onclick="handleAnswer('no')">No</button>
+                `;
+            }
+        }
+
+        function handleAnswer(choice) {
+            const currentObj = flow[currentStep];
+            currentStep = choice === 'yes' ? currentObj.yes : currentObj.no;
+            render();
+        }
+
+        function resetFlow() {
+            currentStep = 'q1';
+            render();
+        }
+
+        // Initialize the page
+        render();
+    </script>
+</body>
+</html>

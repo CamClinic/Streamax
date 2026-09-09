@@ -2,78 +2,275 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Team Troubleshooting Guide</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Streamax Device Diagnostics</title>
     <style>
-        body { font-family: Arial, sans-serif; padding: 40px; background: #f4f4f9; }
-        .card { background: white; padding: 30px; border-radius: 8px; max-width: 500px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        button { padding: 10px 20px; margin-right: 10px; cursor: pointer; }
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --border-color: #334155;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --accent-primary: #38bdf8;
+            --accent-glow: rgba(56, 189, 248, 0.2);
+            --line-color: #475569;
+            --line-active: #38bdf8;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            overflow-x: hidden;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        header h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            letter-spacing: -0.025em;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(to right, #f8fafc, #38bdf8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        header p {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+        }
+
+        /* Flowchart Container */
+        .flowchart-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+            width: 100%;
+            max-width: 900px;
+        }
+
+        /* Node Styling */
+        .node {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.25rem 2rem;
+            min-width: 200px;
+            text-align: center;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            z-index: 10;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+        }
+
+        .node:hover {
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 20px var(--accent-glow);
+            transform: translateY(-2px);
+        }
+
+        .node.active {
+            border-color: var(--accent-primary);
+            background-color: rgba(56, 189, 248, 0.08);
+            box-shadow: 0 0 25px rgba(56, 189, 248, 0.25);
+        }
+
+        .node.root-node {
+            border-width: 2px;
+            font-size: 1.1rem;
+        }
+
+        /* Tree Structure layout using Flexbox grid paths */
+        .branches {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            margin-top: 4rem;
+            position: relative;
+        }
+
+        .branch-column {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 45%;
+            position: relative;
+        }
+
+        .child-node {
+            margin-top: 4rem;
+        }
+
+        /* SVG Connection Lines overlay */
+        .svg-lines {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        path {
+            stroke: var(--line-color);
+            stroke-width: 2;
+            fill: none;
+            transition: stroke 0.4s ease, stroke-width 0.4s ease;
+        }
+
+        path.active-path {
+            stroke: var(--line-active);
+            stroke-width: 3;
+        }
+
+        /* Info Display panel at the bottom */
+        .info-panel {
+            margin-top: 4rem;
+            background-color: rgba(30, 41, 59, 0.5);
+            border: 1px dashed var(--border-color);
+            border-radius: 12px;
+            padding: 1.5rem;
+            max-width: 500px;
+            width: 100%;
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+        }
+
+        .info-panel.highlight {
+            border-style: solid;
+            border-color: var(--accent-primary);
+            color: var(--text-main);
+            background-color: var(--card-bg);
+        }
     </style>
 </head>
 <body>
 
-    <div class="card" id="app">
-        <h2 id="question-text">Loading question...</h2>
-        <div id="answers">
-            <button onclick="handleAnswer('yes')">Yes</button>
-            <button onclick="handleAnswer('no')">No</button>
+    <header>
+        <h1>Streamax Diagnostics</h1>
+        <p>Select a branch below to map your troubleshooting workflow</p>
+    </header>
+
+    <div class="flowchart-container">
+        <!-- SVG Connector paths managed by viewport layout coordinate matching -->
+        <svg class="svg-lines" id="svgCanvas">
+            <!-- Left paths -->
+            <path id="path-left-main" d="" />
+            <path id="path-left-child" d="" />
+            <!-- Right paths -->
+            <path id="path-right-main" d="" />
+            <path id="path-right-child" d="" />
+        </svg>
+
+        <!-- Root Node -->
+        <div class="node root-node active" id="node-root">Streamax Device</div>
+
+        <!-- Flowchart Branches -->
+        <div class="branches">
+            
+            <!-- Left Path: New Install -->
+            <div class="branch-column">
+                <div class="node" id="node-new" onclick="selectPath('new')">New Install</div>
+                <div class="node child-node" id="node-sim">Is the SIM active</div>
+            </div>
+
+            <!-- Right Path: Old Install -->
+            <div class="branch-column">
+                <div class="node" id="node-old" onclick="selectPath('old')">Old Install</div>
+                <div class="node child-node" id="node-lights">Does the device shows any Lights ?</div>
+            </div>
+
         </div>
     </div>
 
+    <!-- Live Panel update output -->
+    <div class="info-panel" id="infoPanel">
+        Click on "New Install" or "Old Install" to trace the action plan.
+    </div>
+
     <script>
-        // Define your questions and where Yes/No should lead
-        const flow = {
-            q1: {
-                text: "Is the user seeing a 500 server error?",
-                yes: "q2_server",
-                no: "q2_client"
-            },
-            q2_server: {
-                text: "Have you tried restarting the backend container?",
-                yes: "resolve_restart",
-                no: "escalate_dev"
-            },
-            q2_client: {
-                text: "Did clearing the browser cache fix the issue?",
-                yes: "resolve_cache",
-                no: "escalate_support"
-            },
-            resolve_restart: { text: "Resolution: Issue resolved by container restart.", yes: null, no: null },
-            escalate_dev: { text: "Resolution: Escalate to the DevOps team.", yes: null, no: null },
-            resolve_cache: { text: "Resolution: Issue resolved by clearing cache.", yes: null, no: null },
-            escalate_support: { text: "Resolution: Create a high-priority ticket.", yes: null, no: null }
-        };
-
-        let currentStep = 'q1';
-
-        function render() {
-            const currentObj = flow[currentStep];
-            document.getElementById('question-text').innerText = currentObj.text;
+        // Interactive Logic to manage Active classes and tracking lines
+        function selectPath(type) {
+            // Reset active states
+            document.getElementById('node-new').classList.remove('active');
+            document.getElementById('node-sim').classList.remove('active');
+            document.getElementById('node-old').classList.remove('active');
+            document.getElementById('node-lights').classList.remove('active');
             
-            const answersDiv = document.getElementById('answers');
-            if (currentObj.yes === null) {
-                // End of tree
-                answersDiv.innerHTML = `<button onclick="resetFlow()">Start Over</button>`;
-            } else {
-                answersDiv.innerHTML = `
-                    <button onclick="handleAnswer('yes')">Yes</button>
-                    <button onclick="handleAnswer('no')">No</button>
-                `;
+            document.getElementById('path-left-main').classList.remove('active-path');
+            document.getElementById('path-left-child').classList.remove('active-path');
+            document.getElementById('path-right-main').classList.remove('active-path');
+            document.getElementById('path-right-child').classList.remove('active-path');
+
+            const panel = document.getElementById('infoPanel');
+            panel.classList.add('highlight');
+
+            // Apply selected tracking path states
+            if (type === 'new') {
+                document.getElementById('node-new').classList.add('active');
+                document.getElementById('node-sim').classList.add('active');
+                document.getElementById('path-left-main').classList.add('active-path');
+                document.getElementById('path-left-child').classList.add('active-path');
+                panel.innerHTML = "<strong>New Installation Action:</strong> Verify network provisioning. Ensure the SIM card configuration profiles match standard requirements.";
+            } else if (type === 'old') {
+                document.getElementById('node-old').classList.add('active');
+                document.getElementById('node-lights').classList.add('active');
+                document.getElementById('path-right-main').classList.add('active-path');
+                document.getElementById('path-right-child').classList.add('active-path');
+                panel.innerHTML = "<strong>Existing Installation Action:</strong> Check hardware power distribution. If no indicators illuminate, inspect fuses, line voltage, and grounds.";
             }
         }
 
-        function handleAnswer(choice) {
-            const currentObj = flow[currentStep];
-            currentStep = choice === 'yes' ? currentObj.yes : currentObj.no;
-            render();
-        }
+        // Draw and update dynamic connector coordinates relative to elements
+        function drawLines() {
+            const root = document.getElementById('node-root').getBoundingClientRect();
+            const newInst = document.getElementById('node-new').getBoundingClientRect();
+            const sim = document.getElementById('node-sim').getBoundingClientRect();
+            const oldInst = document.getElementById('node-old').getBoundingClientRect();
+            const lights = document.getElementById('node-lights').getBoundingClientRect();
+            const container = document.querySelector('.flowchart-container').getBoundingClientRect();
 
-        function resetFlow() {
-            currentStep = 'q1';
-            render();
-        }
+            const cX = container.left;
+            const cY = container.top;
 
-        // Initialize the page
-        render();
-    </script>
-</body>
-</html>
+            // Math to map paths natively centered under/above layout items
+            const rootBottomX = (root.left + root.right) / 2 - cX;
+            const rootBottomY = root.bottom - cY;
+
+            const newTopX = (newInst.left + newInst.right) / 2 - cX;
+            const newTopY = newInst.top - cY;
+            const newBottomX = (newInst.left + newInst.right) / 2 - cX;
+            const newBottomY = newInst.bottom - cY;
+
+            const simTopX = (sim.left + sim.right) / 2 - cX;
+            const simTopY = sim.top - cY;
+
+            const oldTopX = (oldInst.left + oldInst.right) / 2 - cX;
+            const oldTopY = oldInst.top - cY;
+            const oldBottomX = (oldInst.left + oldInst.right) / 2 - cX;
+            const oldBottomY = oldInst.bottom - cY;
+
+            const lightsTopX = (lights.left + lights.right) / 2 - cX;

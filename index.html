@@ -3,18 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Streamax Device Diagnostics</title>
+    <title>Streamax Diagnostic Workflow</title>
     <style>
         :root {
-            --bg-color: #0f172a;
+            --bg-dark: #0f172a;
             --card-bg: #1e293b;
-            --border-color: #334155;
-            --text-main: #f8fafc;
-            --text-muted: #94a3b8;
-            --accent-primary: #38bdf8;
-            --accent-glow: rgba(56, 189, 248, 0.2);
-            --line-color: #475569;
-            --line-active: #38bdf8;
+            --accent-blue: #38bdf8;
+            --accent-glow: rgba(56, 189, 248, 0.15);
+            --border: #334155;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --btn-yes: #10b981;
+            --btn-no: #ef4444;
+            --card-resolve: #0284c7;
         }
 
         * {
@@ -25,252 +26,230 @@
         }
 
         body {
-            background-color: var(--bg-color);
-            color: var(--text-main);
+            background-color: var(--bg-dark);
+            color: var(--text-primary);
             min-height: 100vh;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            padding: 2rem;
-            overflow-x: hidden;
+            padding: 1.5rem;
         }
 
-        header {
-            text-align: center;
-            margin-bottom: 3rem;
-        }
-
-        header h1 {
-            font-size: 2rem;
-            font-weight: 700;
-            letter-spacing: -0.025em;
-            margin-bottom: 0.5rem;
-            background: linear-gradient(to right, #f8fafc, #38bdf8);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        header p {
-            color: var(--text-muted);
-            font-size: 0.95rem;
-        }
-
-        /* Flowchart Container */
-        .flowchart-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            position: relative;
-            width: 100%;
-            max-width: 900px;
-        }
-
-        /* Node Styling */
-        .node {
+        .wizard-container {
             background-color: var(--card-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            padding: 1.25rem 2rem;
-            min-width: 200px;
-            text-align: center;
-            font-weight: 600;
-            font-size: 1rem;
-            cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            position: relative;
-            z-index: 10;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
-        }
-
-        .node:hover {
-            border-color: var(--accent-primary);
-            box-shadow: 0 0 20px var(--accent-glow);
-            transform: translateY(-2px);
-        }
-
-        .node.active {
-            border-color: var(--accent-primary);
-            background-color: rgba(56, 189, 248, 0.08);
-            box-shadow: 0 0 25px rgba(56, 189, 248, 0.25);
-        }
-
-        .node.root-node {
-            border-width: 2px;
-            font-size: 1.1rem;
-        }
-
-        /* Tree Structure layout using Flexbox grid paths */
-        .branches {
-            display: flex;
-            justify-content: space-between;
+            border: 1px solid var(--border);
+            border-radius: 16px;
             width: 100%;
-            margin-top: 4rem;
+            max-width: 600px;
+            padding: 2.5rem;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3), 0 8px 10px -6px rgba(0, 0, 0, 0.3);
             position: relative;
+            overflow: hidden;
         }
 
-        .branch-column {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            width: 45%;
-            position: relative;
-        }
-
-        .child-node {
-            margin-top: 4rem;
-        }
-
-        /* SVG Connection Lines overlay */
-        .svg-lines {
+        .wizard-container::before {
+            content: '';
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: 1;
+            height: 4px;
+            background: linear-gradient(90deg, var(--accent-blue), #818cf8);
         }
 
-        path {
-            stroke: var(--line-color);
-            stroke-width: 2;
-            fill: none;
-            transition: stroke 0.4s ease, stroke-width 0.4s ease;
+        .header-title {
+            font-size: 1.4rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            letter-spacing: -0.025em;
+            background: linear-gradient(to right, #ffffff, var(--accent-blue));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
 
-        path.active-path {
-            stroke: var(--line-active);
-            stroke-width: 3;
+        .subtitle {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-bottom: 2rem;
         }
 
-        /* Info Display panel at the bottom */
-        .info-panel {
-            margin-top: 4rem;
-            background-color: rgba(30, 41, 59, 0.5);
-            border: 1px dashed var(--border-color);
-            border-radius: 12px;
-            padding: 1.5rem;
-            max-width: 500px;
-            width: 100%;
-            text-align: center;
-            color: var(--text-muted);
+        .step-card {
+            display: none;
+            animation: fadeIn 0.4s ease forwards;
+        }
+
+        .step-card.active {
+            display: block;
+        }
+
+        .question-text {
+            font-size: 1.15rem;
+            font-weight: 600;
+            line-height: 1.5;
+            margin-bottom: 1.5rem;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 0.85rem;
+            border-radius: 8px;
+            font-weight: 600;
             font-size: 0.95rem;
-            transition: all 0.3s ease;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: center;
+            border: none;
         }
 
-        .info-panel.highlight {
-            border-style: solid;
-            border-color: var(--accent-primary);
-            color: var(--text-main);
-            background-color: var(--card-bg);
+        .btn-primary {
+            background-color: var(--accent-blue);
+            color: #0f172a;
+        }
+
+        .btn-primary:hover {
+            background-color: #7dd3fc;
+            box-shadow: 0 0 12px var(--accent-glow);
+        }
+
+        .btn-yes {
+            background-color: rgba(16, 185, 129, 0.1);
+            border: 1px solid var(--btn-yes);
+            color: #34d399;
+        }
+
+        .btn-yes:hover {
+            background-color: var(--btn-yes);
+            color: white;
+        }
+
+        .btn-no {
+            background-color: rgba(239, 68, 68, 0.1);
+            border: 1px solid var(--btn-no);
+            color: #f87171;
+        }
+
+        .btn-no:hover {
+            background-color: var(--btn-no);
+            color: white;
+        }
+
+        .btn-secondary {
+            background-color: #334155;
+            color: var(--text-primary);
+            margin-top: 1rem;
+            font-size: 0.85rem;
+            padding: 0.5rem 1rem;
+            width: auto;
+            flex: none;
+        }
+
+        .btn-secondary:hover {
+            background-color: #475569;
+        }
+
+        /* Action item callout boxes */
+        .resolution-box {
+            background-color: rgba(2, 132, 199, 0.1);
+            border-left: 4px solid var(--card-resolve);
+            padding: 1.25rem;
+            border-radius: 0 8px 8px 0;
+            margin-top: 1rem;
+            line-height: 1.6;
+        }
+
+        .resolution-box h4 {
+            color: var(--accent-blue);
+            margin-bottom: 0.5rem;
+            font-size: 1rem;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
         }
     </style>
 </head>
 <body>
 
-    <header>
-        <h1>Streamax Diagnostics</h1>
-        <p>Select a branch below to map your troubleshooting workflow</p>
-    </header>
+    <div class="wizard-container">
+        <h2 class="header-title">Streamax Interactive Troubleshooter</h2>
+        <p class="subtitle">Follow the dynamic branch tree to pinpoint the device state</p>
 
-    <div class="flowchart-container">
-        <!-- SVG Connector paths managed by viewport layout coordinate matching -->
-        <svg class="svg-lines" id="svgCanvas">
-            <!-- Left paths -->
-            <path id="path-left-main" d="" />
-            <path id="path-left-child" d="" />
-            <!-- Right paths -->
-            <path id="path-right-main" d="" />
-            <path id="path-right-child" d="" />
-        </svg>
-
-        <!-- Root Node -->
-        <div class="node root-node active" id="node-root">Streamax Device</div>
-
-        <!-- Flowchart Branches -->
-        <div class="branches">
-            
-            <!-- Left Path: New Install -->
-            <div class="branch-column">
-                <div class="node" id="node-new" onclick="selectPath('new')">New Install</div>
-                <div class="node child-node" id="node-sim">Is the SIM active</div>
+        <!-- Step 1: Install Type -->
+        <div class="step-card active" id="step-start">
+            <p class="question-text">What type of device setup is this?</p>
+            <div class="btn-group">
+                <button class="btn btn-primary" onclick="goToStep('step-fresh')">Fresh Install</button>
+                <button class="btn btn-primary" onclick="goToStep('step-old')">Old Install</button>
             </div>
-
-            <!-- Right Path: Old Install -->
-            <div class="branch-column">
-                <div class="node" id="node-old" onclick="selectPath('old')">Old Install</div>
-                <div class="node child-node" id="node-lights">Does the device shows any Lights ?</div>
-            </div>
-
         </div>
-    </div>
 
-    <!-- Live Panel update output -->
-    <div class="info-panel" id="infoPanel">
-        Click on "New Install" or "Old Install" to trace the action plan.
-    </div>
+        <!-- Step 2: Fresh Install SIM Status -->
+        <div class="step-card" id="step-fresh">
+            <p class="question-text">Is the camera SIM active?</p>
+            <div class="btn-group">
+                <button class="btn btn-yes" onclick="goToStep('step-installer')">Yes</button>
+                <button class="btn btn-no" onclick="goToStep('res-success-dept')">No</button>
+            </div>
+            <button class="btn btn-secondary" onclick="goToStep('step-start')">← Back</button>
+        </div>
 
-    <script>
-        // Interactive Logic to manage Active classes and tracking lines
-        function selectPath(type) {
-            // Reset active states
-            document.getElementById('node-new').classList.remove('active');
-            document.getElementById('node-sim').classList.remove('active');
-            document.getElementById('node-old').classList.remove('active');
-            document.getElementById('node-lights').classList.remove('active');
-            
-            document.getElementById('path-left-main').classList.remove('active-path');
-            document.getElementById('path-left-child').classList.remove('active-path');
-            document.getElementById('path-right-main').classList.remove('active-path');
-            document.getElementById('path-right-child').classList.remove('active-path');
+        <!-- Resolution: Success Dept -->
+        <div class="step-card" id="res-success-dept">
+            <div class="resolution-box">
+                <h4>Required Action</h4>
+                <p>Connect with the <strong>Success Department</strong> immediately to activate the SIM card configuration.</p>
+            </div>
+            <button class="btn btn-secondary" onclick="goToStep('step-fresh')">← Back</button>
+        </div>
 
-            const panel = document.getElementById('infoPanel');
-            panel.classList.add('highlight');
+        <!-- Step 3: Installer Check -->
+        <div class="step-card" id="step-installer">
+            <p class="question-text">Is the device installed by an authorized installer?</p>
+            <div class="btn-group">
+                <button class="btn btn-yes" onclick="goToStep('step-portal')">Yes</button>
+                <button class="btn btn-no" onclick="goToStep('res-bill')">No</button>
+            </div>
+            <button class="btn btn-secondary" onclick="goToStep('step-fresh')">← Back</button>
+        </div>
 
-            // Apply selected tracking path states
-            if (type === 'new') {
-                document.getElementById('node-new').classList.add('active');
-                document.getElementById('node-sim').classList.add('active');
-                document.getElementById('path-left-main').classList.add('active-path');
-                document.getElementById('path-left-child').classList.add('active-path');
-                panel.innerHTML = "<strong>New Installation Action:</strong> Verify network provisioning. Ensure the SIM card configuration profiles match standard requirements.";
-            } else if (type === 'old') {
-                document.getElementById('node-old').classList.add('active');
-                document.getElementById('node-lights').classList.add('active');
-                document.getElementById('path-right-main').classList.add('active-path');
-                document.getElementById('path-right-child').classList.add('active-path');
-                panel.innerHTML = "<strong>Existing Installation Action:</strong> Check hardware power distribution. If no indicators illuminate, inspect fuses, line voltage, and grounds.";
-            }
-        }
+        <!-- Resolution: Check Bill -->
+        <div class="step-card" id="res-bill">
+            <div class="resolution-box">
+                <h4>Required Action</h4>
+                <p>Please check with <strong>Bill</strong> to verify the current installation status.</p>
+            </div>
+            <button class="btn btn-secondary" onclick="goToStep('step-installer')">← Back</button>
+        </div>
 
-        // Draw and update dynamic connector coordinates relative to elements
-        function drawLines() {
-            const root = document.getElementById('node-root').getBoundingClientRect();
-            const newInst = document.getElementById('node-new').getBoundingClientRect();
-            const sim = document.getElementById('node-sim').getBoundingClientRect();
-            const oldInst = document.getElementById('node-old').getBoundingClientRect();
-            const lights = document.getElementById('node-lights').getBoundingClientRect();
-            const container = document.querySelector('.flowchart-container').getBoundingClientRect();
+        <!-- Step 4: Backend Portal Check -->
+        <div class="step-card" id="step-portal">
+            <p class="question-text">Is the device successfully added to both the backend portal and the customer portal?</p>
+            <div class="btn-group">
+                <button class="btn btn-yes" onclick="goToStep('step-lights')">Yes</button>
+                <button class="btn btn-no" onclick="goToStep('res-zenduit')">No</button>
+            </div>
+            <button class="btn btn-secondary" onclick="goToStep('step-installer')">← Back</button>
+        </div>
 
-            const cX = container.left;
-            const cY = container.top;
+        <!-- Resolution: Zenduit Ticket -->
+        <div class="step-card" id="res-zenduit">
+            <div class="resolution-box">
+                <h4>Required Action</h4>
+                <p>Raise a ticket with <strong>Zenduit</strong> to add the device configuration onto the backend system and onto the company customer portal.</p>
+            </div>
+            <button class="btn btn-secondary" onclick="goToStep('step-portal')">← Back</button>
+        </div>
 
-            // Math to map paths natively centered under/above layout items
-            const rootBottomX = (root.left + root.right) / 2 - cX;
-            const rootBottomY = root.bottom - cY;
-
-            const newTopX = (newInst.left + newInst.right) / 2 - cX;
-            const newTopY = newInst.top - cY;
-            const newBottomX = (newInst.left + newInst.right) / 2 - cX;
-            const newBottomY = newInst.bottom - cY;
-
-            const simTopX = (sim.left + sim.right) / 2 - cX;
-            const simTopY = sim.top - cY;
-
-            const oldTopX = (oldInst.left + oldInst.right) / 2 - cX;
-            const oldTopY = oldInst.top - cY;
-            const oldBottomX = (oldInst.left + oldInst.right) / 2 - cX;
-            const oldBottomY = oldInst.bottom - cY;
-
-            const lightsTopX = (lights.left + lights.right) / 2 - cX;
+        <!-- Step 5: Device Indicator Lights -->
+        <div class="step-card" id="step-lights">
+            <p class="question-text">Is the device getting any illumination/light indicators directly on the unit?</p>
+            <div class="btn-group">
+                <button class="btn btn-yes" onclick="goToStep('step-globe')">Yes</button>

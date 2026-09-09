@@ -66,14 +66,30 @@
         button:active {
             transform: translateY(0);
         }
+        .nav-controls {
+            display: flex;
+            gap: 12px;
+            margin-top: 20px;
+        }
         .btn-restart {
             background: #475569;
             color: #f8fafc;
             text-align: center;
-            margin-top: 15px;
+            flex: 1;
         }
         .btn-restart:hover {
             background: #64748b;
+        }
+        .btn-back {
+            background: #334155;
+            color: #94a3b8;
+            text-align: center;
+            border: 1px solid #475569;
+            flex: 1;
+        }
+        .btn-back:hover {
+            background: #475569;
+            color: #f8fafc;
         }
         .resolution-box {
             background: rgba(56, 189, 248, 0.08);
@@ -91,6 +107,9 @@
         <h2 id="question-text">Loading diagnostic steps...</h2>
         <div id="answers" class="btn-container">
             <!-- Buttons are generated here dynamically -->
+        </div>
+        <div id="navigation-controls" class="nav-controls">
+            <!-- Back option displays dynamically -->
         </div>
     </div>
 
@@ -181,15 +200,22 @@
         };
 
         let currentStep = 'start';
+        let historyStack = []; // Array keeping track of previous navigation states
 
         function render() {
             const currentObj = flow[currentStep];
             const displayEl = document.getElementById('question-text');
             const answersDiv = document.getElementById('answers');
+            const navDiv = document.getElementById('navigation-controls');
             
+            // 1. Render Main Question or Resolution Context Content
             if (currentObj.choices === null) {
                 displayEl.innerHTML = `<div class="resolution-box">${currentObj.text}</div>`;
-                answersDiv.innerHTML = `<button class="btn-restart" onclick="resetFlow()">← Restart Diagnostic Process</button>`;
+                answersDiv.innerHTML = "";
+                navDiv.innerHTML = `
+                    <button class="btn-back" onclick="goBack()">← Go Back</button>
+                    <button class="btn-restart" onclick="resetFlow()">Restart Process</button>
+                `;
             } else {
                 displayEl.innerText = currentObj.text;
                 let htmlContent = "";
@@ -198,21 +224,24 @@
                     htmlContent += `<button onclick="handleSelection(${index})">${item.text}</button>`;
                 });
                 answersDiv.innerHTML = htmlContent;
+
+                // 2. Render Navigation controls bar dynamically
+                if (historyStack.length > 0) {
+                    navDiv.innerHTML = `<button class="btn-back" onclick="goBack()">← Go Back</button>`;
+                } else {
+                    navDiv.innerHTML = ""; // No back button on absolute first screen
+                }
             }
         }
 
         function handleSelection(index) {
             const currentObj = flow[currentStep];
+            historyStack.push(currentStep); // Save current step location to structural history stack
             currentStep = currentObj.choices[index].next;
             render();
         }
 
-        function resetFlow() {
-            currentStep = 'start';
-            render();
-        }
-
-        render();
-    </script>
-</body>
-</html>
+        function goBack() {
+            if (historyStack.length > 0) {
+                currentStep = historyStack.pop(); // Retrieve and jump directly to prior state location array string
+                render();

@@ -70,6 +70,7 @@
             margin-bottom: 2rem;
         }
 
+        /* Card visibility managed dynamically */
         .step-card {
             display: none;
         }
@@ -85,7 +86,6 @@
             margin-bottom: 1.5rem;
         }
 
-        /* Standard Radio Option Styles */
         .options-list {
             margin-bottom: 1.5rem;
         }
@@ -99,11 +99,6 @@
             border-radius: 8px;
             margin-bottom: 0.75rem;
             cursor: pointer;
-            transition: background 0.2s ease;
-        }
-
-        .option-item:hover {
-            background: rgba(255, 255, 255, 0.07);
         }
 
         .option-item input[type="radio"] {
@@ -111,7 +106,6 @@
             width: 18px;
             height: 18px;
             accent-color: var(--accent-blue);
-            cursor: pointer;
         }
 
         .option-item label {
@@ -120,7 +114,6 @@
             flex-grow: 1;
         }
 
-        /* Action Buttons */
         .btn-group {
             display: flex;
             gap: 1rem;
@@ -134,7 +127,6 @@
             font-size: 0.95rem;
             cursor: pointer;
             border: none;
-            transition: all 0.2s ease;
         }
 
         .btn-submit {
@@ -143,18 +135,9 @@
             flex-grow: 2;
         }
 
-        .btn-submit:hover {
-            background-color: #7dd3fc;
-            box-shadow: 0 0 12px var(--accent-glow);
-        }
-
         .btn-back {
             background-color: #334155;
             color: var(--text-primary);
-        }
-
-        .btn-back:hover {
-            background-color: #475569;
         }
 
         .resolution-box {
@@ -192,7 +175,7 @@
                 </div>
             </div>
             <div class="btn-group">
-                <button class="btn btn-submit" onclick="processStart()">Submit Plan</button>
+                <button class="btn btn-submit" id="btn-submit-start">Submit Plan</button>
             </div>
         </div>
 
@@ -210,8 +193,8 @@
                 </div>
             </div>
             <div class="btn-group">
-                <button class="btn btn-back" onclick="goToStep('step-start')">Back</button>
-                <button class="btn btn-submit" onclick="processFresh()">Submit Selection</button>
+                <button class="btn btn-back" data-back="step-start">Back</button>
+                <button class="btn btn-submit" id="btn-submit-fresh">Submit Selection</button>
             </div>
         </div>
 
@@ -222,7 +205,7 @@
                 <p>Connect with the <strong>Success Department</strong> immediately to activate the SIM card configuration.</p>
             </div>
             <div class="btn-group">
-                <button class="btn btn-back" onclick="goToStep('step-fresh')">Back</button>
+                <button class="btn btn-back" data-back="step-fresh">Back</button>
             </div>
         </div>
 
@@ -240,8 +223,8 @@
                 </div>
             </div>
             <div class="btn-group">
-                <button class="btn btn-back" onclick="goToStep('step-fresh')">Back</button>
-                <button class="btn btn-submit" onclick="processInstaller()">Submit Selection</button>
+                <button class="btn btn-back" data-back="step-fresh">Back</button>
+                <button class="btn btn-submit" id="btn-submit-installer">Submit Selection</button>
             </div>
         </div>
 
@@ -252,7 +235,7 @@
                 <p>Please check with <strong>Bill</strong> to verify the current installation status.</p>
             </div>
             <div class="btn-group">
-                <button class="btn btn-back" onclick="goToStep('step-installer')">Back</button>
+                <button class="btn btn-back" data-back="step-installer">Back</button>
             </div>
         </div>
 
@@ -270,8 +253,8 @@
                 </div>
             </div>
             <div class="btn-group">
-                <button class="btn btn-back" onclick="goToStep('step-installer')">Back</button>
-                <button class="btn btn-submit" onclick="processPortal()">Submit Selection</button>
+                <button class="btn btn-back" data-back="step-installer">Back</button>
+                <button class="btn btn-submit" id="btn-submit-portal">Submit Selection</button>
             </div>
         </div>
 
@@ -282,9 +265,18 @@
                 <p>Raise a ticket with <strong>Zenduit</strong> to add the device configuration onto the backend system and onto the company customer portal.</p>
             </div>
             <div class="btn-group">
-                <button class="btn btn-back" onclick="goToStep('step-portal')">Back</button>
+                <button class="btn btn-back" data-back="step-portal">Back</button>
             </div>
         </div>
 
         <!-- Step 5: Device Indicator Lights -->
         <div class="step-card" id="step-lights">
+            <p class="question-text">Is the device getting any illumination/light indicators directly on the unit?</p>
+            <div class="options-list">
+                <div class="option-item">
+                    <input type="radio" id="light-yes" name="light_status" value="yes" checked>
+                    <label for="light-yes">Yes</label>
+                </div>
+                <div class="option-item">
+                    <input type="radio" id="light-no" name="light_status" value="no">
+                    <label for="light-no">No</label>

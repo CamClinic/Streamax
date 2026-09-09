@@ -76,11 +76,11 @@
 
         .step-card {
             display: none;
-            animation: fadeIn 0.4s ease forwards;
         }
 
         .step-card.active {
             display: block;
+            animation: fadeIn 0.4s ease forwards;
         }
 
         .question-text {
@@ -143,18 +143,17 @@
         .btn-secondary {
             background-color: #334155;
             color: var(--text-primary);
-            margin-top: 1rem;
+            margin-top: 1.5rem;
             font-size: 0.85rem;
             padding: 0.5rem 1rem;
             width: auto;
-            flex: none;
+            display: inline-block;
         }
 
         .btn-secondary:hover {
             background-color: #475569;
         }
 
-        /* Action item callout boxes */
         .resolution-box {
             background-color: rgba(2, 132, 199, 0.1);
             border-left: 4px solid var(--card-resolve);

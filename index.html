@@ -200,7 +200,7 @@
         };
 
         let currentStep = 'start';
-        let historyStack = []; // Array keeping track of previous navigation states
+        let historyStack = [];
 
         function render() {
             const currentObj = flow[currentStep];
@@ -208,7 +208,6 @@
             const answersDiv = document.getElementById('answers');
             const navDiv = document.getElementById('navigation-controls');
             
-            // 1. Render Main Question or Resolution Context Content
             if (currentObj.choices === null) {
                 displayEl.innerHTML = `<div class="resolution-box">${currentObj.text}</div>`;
                 answersDiv.innerHTML = "";
@@ -225,23 +224,35 @@
                 });
                 answersDiv.innerHTML = htmlContent;
 
-                // 2. Render Navigation controls bar dynamically
                 if (historyStack.length > 0) {
                     navDiv.innerHTML = `<button class="btn-back" onclick="goBack()">← Go Back</button>`;
                 } else {
-                    navDiv.innerHTML = ""; // No back button on absolute first screen
+                    navDiv.innerHTML = "";
                 }
             }
         }
 
         function handleSelection(index) {
             const currentObj = flow[currentStep];
-            historyStack.push(currentStep); // Save current step location to structural history stack
+            historyStack.push(currentStep);
             currentStep = currentObj.choices[index].next;
             render();
         }
 
         function goBack() {
             if (historyStack.length > 0) {
-                currentStep = historyStack.pop(); // Retrieve and jump directly to prior state location array string
+                currentStep = historyStack.pop();
                 render();
+            }
+        }
+
+        function resetFlow() {
+            currentStep = 'start';
+            historyStack = [];
+            render();
+        }
+
+        render();
+    </script>
+</body>
+</html>

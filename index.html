@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Streamax Diagnostic Guide</title>
+    <title>Streamax Comprehensive Troubleshooting Guide</title>
     <style>
         body { 
             font-family: Arial, sans-serif; 
@@ -19,7 +19,7 @@
             background: #1e293b; 
             padding: 40px; 
             border-radius: 12px; 
-            max-width: 550px; 
+            max-width: 600px; 
             width: 100%;
             box-shadow: 0 10px 15px -3px rgba(0,0,0,0.3); 
             border: 1px solid #334155;
@@ -41,10 +41,13 @@
             margin-bottom: 25px; 
             font-weight: 600;
         }
+        .btn-container {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
         button { 
-            padding: 12px 24px; 
-            margin-right: 12px; 
-            margin-bottom: 12px;
+            padding: 14px 24px; 
             cursor: pointer; 
             background: #38bdf8;
             color: #0f172a;
@@ -52,138 +55,159 @@
             border-radius: 6px;
             font-weight: bold;
             font-size: 0.95rem;
-            transition: background 0.2s;
+            transition: background 0.2s, transform 0.1s;
+            text-align: left;
+            width: 100%;
         }
         button:hover {
             background: #7dd3fc;
+            transform: translateY(-1px);
+        }
+        button:active {
+            transform: translateY(0);
         }
         .btn-restart {
             background: #475569;
             color: #f8fafc;
+            text-align: center;
+            margin-top: 15px;
         }
         .btn-restart:hover {
             background: #64748b;
+        }
+        .resolution-box {
+            background: rgba(56, 189, 248, 0.08);
+            border-left: 4px solid #38bdf8;
+            padding: 15px;
+            border-radius: 0 6px 6px 0;
+            margin-bottom: 20px;
+            line-height: 1.6;
         }
     </style>
 </head>
 <body>
 
     <div class="card" id="app">
-        <h2 id="question-text">Loading question...</h2>
-        <div id="answers">
-            <!-- Buttons are generated dynamically by JavaScript here -->
+        <h2 id="question-text">Loading diagnostic steps...</h2>
+        <div id="answers" class="btn-container">
+            <!-- Dynamic interactive choice actions populate here -->
         </div>
     </div>
 
     <script>
-        // Streamax step logic routing configuration
+        // Data map tracking the entire visual architecture from the workflow diagram
         const flow = {
-            q1: {
-                text: "What type of device setup is this?",
-                yes: "q2_fresh", // Maps to Fresh Install selection
-                no: "q2_old",    // Maps to Old Install selection
-                labels: { yes: "Fresh Install", no: "Old Install" }
-            },
-            q2_fresh: {
-                text: "Is the camera SIM active?",
-                yes: "q3_installer",
-                no: "res_success_dept"
-            },
-            res_success_dept: { 
-                text: "Resolution: Connect with Success Department to activate the SIM.", 
-                yes: null, 
-                no: null 
-            },
-            q3_installer: {
-                text: "Is the device installed by an installer?",
-                yes: "q4_portal",
-                no: "res_bill"
-            },
-            res_bill: { 
-                text: "Resolution: Check with Bill for installation status.", 
-                yes: null, 
-                no: null 
-            },
-            q4_portal: {
-                text: "Is the device added to the backend portal and on the customer portal?",
-                yes: "q5_lights_fresh",
-                no: "res_zenduit"
-            },
-            res_zenduit: { 
-                text: "Resolution: Raise a ticket with Zenduit to add the device on backend and customer portal.", 
-                yes: null, 
-                no: null 
-            },
-            q5_lights_fresh: {
-                text: "Is the device getting any light on the device?",
-                yes: "q6_globe",
-                no: "res_verify_connections"
-            },
-            res_verify_connections: { 
-                text: "Resolution: Ask the customer to verify the connection.", 
-                yes: null, 
-                no: null 
-            },
-            q6_globe: {
-                text: "Is there a globe light showing any light or not?",
-                yes: "res_globe_yes",
-                no: "res_globe_no"
-            },
-            res_globe_yes: { 
-                text: "Resolution: Diagnostic completed. Globe light active.", 
-                yes: null, 
-                no: null 
-            },
-            res_globe_no: { 
-                text: "Resolution: Diagnostic completed. Globe light inactive.", 
-                yes: null, 
-                no: null 
+            start: {
+                text: "Select the primary Streamax Device Issue category:",
+                choices: [
+                    { text: "Camera Quality (Resolution & Audio Issue)", next: "res_camera_quality" },
+                    { text: "Rules Not working", next: "res_rules" },
+                    { text: "Device Offline", next: "q_device_lights" },
+                    { text: "Not Recording", next: "res_recording" },
+                    { text: "Aux camera not showing", next: "res_aux" }
+                ]
             },
             
-            // Old Install branch path
-            q2_old: {
-                text: "Is the device getting any light on the device?",
-                yes: "q6_globe",
-                no: "res_verify_connections"
-            }
+            // Outer Flowchart Categories End Nodes
+            res_camera_quality: { text: "Resolution: Inspect camera focus lenses, wipe external housing surfaces clean, and check microphone gains inside diagnostic parameters.", choices: null },
+            res_rules: { text: "Resolution: Verify event triggers, reset cloud rule mapping templates, and push updated parameters to the terminal unit.", choices: null },
+            res_recording: { text: "Resolution: Check localized storage status indicators, verify SD/HDD write formatting parameters, and inspect partition errors.", choices: null },
+            res_aux: { text: "Resolution: Check specialized multi-channel input connections, auxiliary power link lines, and peripheral camera configuration setups.", choices: null },
+
+            // Main Diagnostic Tree Stack
+            q_device_lights: {
+                text: "Does the device show any Light?",
+                choices: [
+                    { text: "Yes", next: "q_globe_light" },
+                    { text: "No", next: "q_install_age" }
+                ]
+            },
+            q_install_age: {
+                text: "What type of device environment is this?",
+                choices: [
+                    { text: "Fresh Install", next: "res_verify_connections" },
+                    { text: "Old Device", next: "res_verify_connections" }
+                ]
+            },
+            q_globe_light: {
+                text: "Does it show Globe Light?",
+                choices: [
+                    { text: "Yes", next: "q_sim_active" },
+                    { text: "No", next: "res_verify_connections" }
+                ]
+            },
+            q_sim_active: {
+                text: "Is the internal SIM profile verified as active?",
+                choices: [
+                    { text: "Yes", next: "q_sim_swap" },
+                    { text: "No", next: "res_escalate_success_manager" }
+                ]
+            },
+            res_escalate_success_manager: { text: "Resolution: Escalate / Transfer technical support ticket internally with Success Manager.", choices: null },
+
+            q_sim_swap: {
+                text: "Can the client test a swap with an alternative known active SIM?",
+                choices: [
+                    { text: "Yes", next: "q_swap_result" },
+                    { text: "No", next: "q_veyse_app" }
+                ]
+            },
+            q_swap_result: {
+                text: "After swapping a working SIM into the device, did it connect?",
+                choices: [
+                    { text: "Yes", next: "res_sim_replaced" },
+                    { text: "No", next: "q_veyse_app" }
+                ]
+            },
+            res_sim_replaced: { text: "Resolution: The physical SIM card has failed. Order and provision a new functional replacement module.", choices: null },
+
+            q_veyse_app: {
+                text: "Can the client access the dedicated Veyse mobile application?",
+                choices: [
+                    { text: "Yes", next: "q_portal_check" },
+                    { text: "No", next: "q_portal_check" }
+                ]
+            },
+            q_portal_check: {
+                text: "Is the specific hardware device item verified as added on the portal parameters?",
+                choices: [
+                    { text: "Yes", next: "res_installer_visit" },
+                    { text: "No", next: "res_zenduit_ticket" }
+                ]
+            },
+            res_installer_visit: { text: "Resolution: Raise formal Installer Visit scheduling request to inspect the onsite physical device parameters.", choices: null },
+            res_zenduit_ticket: { text: "Resolution: Raise formal Support Ticket with Zenduit to append and link the hardware profile on the management backend and font-end interfaces.", choices: null }
         };
 
-        let currentStep = 'q1';
+        let currentStep = 'start';
 
         function render() {
             const currentObj = flow[currentStep];
-            document.getElementById('question-text').innerText = currentObj.text;
-            
+            const displayEl = document.getElementById('question-text');
             const answersDiv = document.getElementById('answers');
             
-            if (currentObj.yes === null) {
-                // Leaf resolution end of decision node path reached
-                answersDiv.innerHTML = `<button class="btn-restart" onclick="resetFlow()">Start Over</button>`;
+            // Check if node is a resolution card leaf node end step
+            if (currentObj.choices === null) {
+                displayEl.innerHTML = `<div class="resolution-box">${currentObj.text}</div>`;
+                answersDiv.innerHTML = `<button class="btn-restart" onclick="resetFlow()">← Restart Diagnostic Process</button>`;
             } else {
-                // Fetch dynamic text string overrides for selection buttons if present
-                const textYes = (currentObj.labels && currentObj.labels.yes) ? currentObj.labels.yes : "Yes";
-                const textNo = (currentObj.labels && currentObj.labels.no) ? currentObj.labels.no : "No";
+                displayEl.innerText = currentObj.text;
+                let htmlContent = "";
                 
-                answersDiv.innerHTML = `
-                    <button onclick="handleAnswer('yes')">${textYes}</button>
-                    <button onclick="handleAnswer('no')">${textNo}</button>
-                `;
+                // Map array options accurately into explicit separate selection actions
+                currentObj.choices.forEach(function(item, idx) {
+                    htmlContent += `<button onclick="handleSelection(${idx})">${item.text}</button>`;
+                });
+                answersDiv.innerHTML = htmlContent;
             }
         }
 
-        function handleAnswer(choice) {
+        function handleSelection(index) {
             const currentObj = flow[currentStep];
-            currentStep = choice === 'yes' ? currentObj.yes : currentObj.no;
+            currentStep = currentObj.choices[index].next;
             render();
         }
 
         function resetFlow() {
-            currentStep = 'q1';
+            currentStep = 'start';
             render();
-        }
-
-        // Initialize display configuration state
-        render();
-    </script>
-</body>
-</html>

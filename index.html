@@ -146,6 +146,59 @@
             margin-top: 10px;
         }
 
+    
+        .summary-meta {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 12px;
+        }
+
+        .summary-meta-item {
+            background: rgba(15, 23, 42, 0.45);
+            border: 1px solid #334155;
+            border-radius: 6px;
+            padding: 10px;
+        }
+
+        .summary-meta-label {
+            display: block;
+            font-size: 0.8rem;
+            color: #94a3b8;
+            margin-bottom: 4px;
+        }
+
+        .summary-meta-value {
+            font-weight: bold;
+            word-break: break-word;
+        }
+
+        .copy-summary-btn {
+            margin-top: 14px;
+            text-align: center;
+            background: #818cf8;
+            color: #0f172a;
+        }
+
+        .copy-summary-btn:hover {
+            background: #a5b4fc;
+        }
+
+        .copy-status {
+            display: block;
+            text-align: center;
+            color: #94a3b8;
+            font-size: 0.82rem;
+            margin-top: 8px;
+            min-height: 18px;
+        }
+
+        @media (max-width: 560px) {
+            .summary-meta {
+                grid-template-columns: 1fr;
+            }
+        }
+
     </style>
 </head>
 <body>
@@ -627,6 +680,57 @@
         let historyStack = [];
         let pathStack = [];
 
+        let sessionStartTime = new Date();
+        let sessionEndTime = null;
+
+        function formatUtc(date) {
+            if (!date) return "—";
+
+            const pad = (value) => String(value).padStart(2, "0");
+
+            return `${date.getUTCFullYear()}-${pad(date.getUTCMonth() + 1)}-${pad(date.getUTCDate())} ` +
+                   `${pad(date.getUTCHours())}:${pad(date.getUTCMinutes())}:${pad(date.getUTCSeconds())} UTC`;
+        }
+
+        function formatDuration(milliseconds) {
+            const totalSeconds = Math.max(0, Math.floor(milliseconds / 1000));
+            const hours = Math.floor(totalSeconds / 3600);
+            const minutes = Math.floor((totalSeconds % 3600) / 60);
+            const seconds = totalSeconds % 60;
+
+            if (hours > 0) {
+                return `${hours}h ${minutes}m ${seconds}s`;
+            }
+
+            if (minutes > 0) {
+                return `${minutes}m ${seconds}s`;
+            }
+
+            return `${seconds}s`;
+        }
+
+        function getSessionDuration() {
+            const end = sessionEndTime || new Date();
+            return formatDuration(end.getTime() - sessionStartTime.getTime());
+        }
+
+        function getCopySummaryText() {
+            const summary = buildSummary();
+
+            return [
+                "STREAMAX DIAGNOSTIC SUMMARY",
+                "",
+                `Issue: ${summary.issue}`,
+                `Start Time (UTC): ${formatUtc(sessionStartTime)}`,
+                `End Time (UTC): ${formatUtc(sessionEndTime || new Date())}`,
+                `Time Spent: ${getSessionDuration()}`,
+                "",
+                `Path Followed: ${summary.followed}`,
+                "",
+                `Summary: ${summary.finalSummary}`
+            ].join("\n");
+        }
+
         function resetPath() {
             pathStack = [{
                 stepId: "start",
@@ -661,29 +765,84 @@
 
         function renderSummary() {
             const summary = buildSummary();
+            const endTime = sessionEndTime || new Date();
+
             return `
                 <div class="summary-box">
                     <div class="summary-title">Diagnostic Summary</div>
+
                     <div><span class="summary-label">Issue:</span> ${escapeHtml(summary.issue)}</div>
+
+                    <div class="summary-meta">
+                        <div class="summary-meta-item">
+                            <span class="summary-meta-label">Start Time</span>
+                            <span class="summary-meta-value">${escapeHtml(formatUtc(sessionStartTime))}</span>
+                        </div>
+
+                        <div class="summary-meta-item">
+                            <span class="summary-meta-label">End Time</span>
+                            <span class="summary-meta-value">${escapeHtml(formatUtc(endTime))}</span>
+                        </div>
+
+                        <div class="summary-meta-item">
+                            <span class="summary-meta-label">Time Spent</span>
+                            <span class="summary-meta-value">${escapeHtml(getSessionDuration())}</span>
+                        </div>
+                    </div>
+
                     <div class="summary-path">
                         <span class="summary-label">Path Followed:</span><br>
                         ${escapeHtml(summary.followed)}
                     </div>
+
                     <div class="summary-action">
                         <span class="summary-label">Summary:</span>
                         ${escapeHtml(summary.finalSummary)}
                     </div>
+
+                    <button class="copy-summary-btn" onclick="copySummary()">
+                        Copy Summary
+                    </button>
+                    <span id="copy-status" class="copy-status"></span>
                 </div>
             `;
         }
 
-        function escapeHtml(value) {
-            return String(value)
-                .replace(/&/g, "&amp;")
-                .replace(/</g, "&lt;")
-                .replace(/>/g, "&gt;")
-                .replace(/"/g, "&quot;")
-                .replace(/'/g, "&#039;");
+        async function copySummary() {
+            const summaryText = getCopySummaryText();
+            const statusEl = document.getElementById("copy-status");
+
+            try {
+                if (navigator.clipboard && window.isSecureContext) {
+                    await navigator.clipboard.writeText(summaryText);
+                } else {
+                    const textArea = document.createElement("textarea");
+                    textArea.value = summaryText;
+                    textArea.style.position = "fixed";
+                    textArea.style.left = "-999999px";
+                    textArea.style.top = "-999999px";
+                    document.body.appendChild(textArea);
+                    textArea.focus();
+                    textArea.select();
+
+                    const copied = document.execCommand("copy");
+                    document.body.removeChild(textArea);
+
+                    if (!copied) {
+                        throw new Error("Clipboard copy failed");
+                    }
+                }
+
+                if (statusEl) {
+                    statusEl.textContent = "Summary copied to clipboard.";
+                }
+            } catch (error) {
+                console.error(error);
+
+                if (statusEl) {
+                    statusEl.textContent = "Copy failed. Please select and copy the summary manually.";
+                }
+            }
         }
 
         function render() {
@@ -700,6 +859,10 @@
             }
 
             if (currentObj.choices === null) {
+                if (!sessionEndTime) {
+                    sessionEndTime = new Date();
+                }
+
                 displayEl.innerHTML = `
                     <div class="resolution-box">${escapeHtml(currentObj.text)}</div>
                     ${renderSummary()}
@@ -779,6 +942,9 @@
         function resetFlow() {
             currentStep = "start";
             historyStack = [];
+            pathStack = [];
+            sessionStartTime = new Date();
+            sessionEndTime = null;
             resetPath();
             render();
         }

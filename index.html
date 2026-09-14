@@ -5,26 +5,28 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Streamax Diagnostic Guide</title>
     <style>
-        body { 
-            font-family: Arial, sans-serif; 
-            padding: 40px; 
-            background: #0f172a; 
+        body {
+            font-family: Arial, sans-serif;
+            padding: 40px;
+            background: #0f172a;
             color: #f8fafc;
             display: flex;
             justify-content: center;
             align-items: center;
             min-height: 90vh;
         }
-        .card { 
-            background: #1e293b; 
-            padding: 40px; 
-            border-radius: 12px; 
-            max-width: 600px; 
+
+        .card {
+            background: #1e293b;
+            padding: 40px;
+            border-radius: 12px;
+            max-width: 600px;
             width: 100%;
-            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.3); 
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.3);
             border: 1px solid #334155;
             position: relative;
         }
+
         .card::before {
             content: '';
             position: absolute;
@@ -35,20 +37,23 @@
             background: linear-gradient(90deg, #38bdf8, #818cf8);
             border-radius: 12px 12px 0 0;
         }
-        h2 { 
+
+        h2 {
             font-size: 1.35rem;
             line-height: 1.5;
-            margin-bottom: 25px; 
+            margin-bottom: 25px;
             font-weight: 600;
         }
+
         .btn-container {
             display: flex;
             flex-direction: column;
             gap: 10px;
         }
-        button { 
-            padding: 14px 24px; 
-            cursor: pointer; 
+
+        button {
+            padding: 14px 24px;
+            cursor: pointer;
             background: #38bdf8;
             color: #0f172a;
             border: none;
@@ -59,27 +64,33 @@
             text-align: left;
             width: 100%;
         }
+
         button:hover {
             background: #7dd3fc;
             transform: translateY(-1px);
         }
+
         button:active {
             transform: translateY(0);
         }
+
         .nav-controls {
             display: flex;
             gap: 12px;
             margin-top: 20px;
         }
+
         .btn-restart {
             background: #475569;
             color: #f8fafc;
             text-align: center;
             flex: 1;
         }
+
         .btn-restart:hover {
             background: #64748b;
         }
+
         .btn-back {
             background: #334155;
             color: #94a3b8;
@@ -87,10 +98,12 @@
             border: 1px solid #475569;
             flex: 1;
         }
+
         .btn-back:hover {
             background: #475569;
             color: #f8fafc;
         }
+
         .resolution-box {
             background: rgba(56, 189, 248, 0.08);
             border-left: 4px solid #38bdf8;
@@ -105,260 +118,547 @@
 
     <div class="card" id="app">
         <h2 id="question-text">Loading diagnostic steps...</h2>
-        <div id="answers" class="btn-container">
-            <!-- Buttons are generated here dynamically -->
-        </div>
-        <div id="navigation-controls" class="nav-controls">
-            <!-- Back option displays dynamically -->
-        </div>
+        <div id="answers" class="btn-container"></div>
+        <div id="navigation-controls" class="nav-controls"></div>
     </div>
 
     <script>
+        /*
+         * SOURCE OF TRUTH:
+         * "Mohit Streamax(2).drawio"
+         *
+         * The flow below follows the actual node-to-node connections
+         * in the Draw.io diagram. No additional branches are invented.
+         */
         const flow = {
             start: {
-                text: "Select the primary Streamax Device Issue category:",
+                text: "Streamax Device issue",
                 choices: [
-                    { text: "Camera Quality (Resolution & Audio Issue)", next: "res_camera_quality" },
-                    { text: "Rules Not working", next: "res_rules" },
-                    { text: "Device Offline", next: "q_device_lights" },
-                    { text: "Recording Issue", next: "q_recording_sub" },
-                    { text: "Aux camera not showing", next: "res_aux" }
-                ]
-            },
-            
-            res_camera_quality: { text: "Resolution: Inspect camera focus lenses, wipe external housing surfaces clean, and check microphone gains inside diagnostic parameters.", choices: null },
-            res_rules: { text: "Resolution: Verify event triggers, reset cloud rule mapping templates, and push updated parameters to the terminal unit.", choices: null },
-            res_aux: { text: "Resolution: Check specialized multi-channel input connections, auxiliary power lines, and peripheral camera configuration setups.", choices: null },
-
-            q_recording_sub: {
-                text: "Select recording sub-category:",
-                choices: [
-                    { text: "Mainstream Recording", next: "res_mainstream_recording" },
-                    { text: "Not Recording", next: "res_recording" }
-                ]
-            },
-            res_mainstream_recording: { text: "Resolution: Verify main stream codec configurations, channel encoding bitrates, and storage stream allocations.", choices: null },
-            res_recording: { text: "Resolution: Check localized storage status indicators, verify SD/HDD write formatting parameters, and inspect partition errors.", choices: null },
-
-            q_device_lights: {
-                text: "Does the device show any Light?",
-                choices: [
-                    { text: "Yes", next: "q_globe_light" },
-                    { text: "No", next: "q_install_type" }
+                    { text: "Camera Quality ( Resolution & Audio Issue )", next: "camera_quality" },
+                    { text: "Device Offline", next: "device_offline" },
+                    { text: "Rules Not working", next: "rules_not_working" },
+                    { text: "Recording Issue", next: "recording_issue" },
+                    { text: "Aux camera not showing", next: "aux_camera" }
                 ]
             },
 
-            q_install_type: {
-                text: "What type of installation is this?",
-                choices: [
-                    { text: "Customer Installer Installation", next: "q_cust_installer_check" },
-                    { text: "Third-party Installer Installation", next: "q_third_party_check" }
-                ]
-            },
-            q_cust_installer_check: {
-                text: "Ask for current installation photos?",
-                choices: [
-                    { text: "Yes", next: "q_installation_codes" },
-                    { text: "No", next: "res_select_correct_option" }
-                ]
-            },
-            res_select_correct_option: { text: "Resolution: Please Go back and select the correct option.", choices: null },
-            q_installation_codes: {
-                text: "Installation Codes Quest?",
-                choices: [
-                    { text: "Yes", next: "q_device_switched" },
-                    { text: "No", next: "res_select_correct_option" }
-                ]
-            },
-            q_third_party_check: {
-                text: "Check Zone Codes or Hardware?",
-                choices: [
-                    { text: "Yes", next: "q_recent_changes" },
-                    { text: "No", next: "res_select_correct_option" }
-                ]
-            },
-            q_recent_changes: {
-                text: "Any Recent Changes in Hardware?",
-                choices: [
-                    { text: "Yes", next: "q_device_switched" },
-                    { text: "No", next: "res_select_correct_option" }
-                ]
-            },
-            q_device_switched: {
-                text: "Is Device Switched?",
-                choices: [
-                    { text: "Yes", next: "res_notify_portal" },
-                    { text: "No", next: "q_disconnect_connect" }
-                ]
-            },
-            res_notify_portal: { text: "Resolution: Can notify the Primary contact via Geotab portal?", choices: null },
-            
-            q_disconnect_connect: {
-                text: "Can Disconnect and Connect back the wires one by one?",
-                choices: [
-                    { text: "Yes", next: "q_device_working_after_disconnect" },
-                    { text: "No", next: "res_schedule_installer_retry" }
-                ]
-            },
-            q_device_working_after_disconnect: {
-                text: "After connecting one by one, is the device working?",
-                choices: [
-                    { text: "Yes", next: "res_device_fixed_working" },
-                    { text: "No", next: "res_schedule_installer_retry" }
-                ]
-            },
-            res_device_fixed_working: { text: "Resolution: Device issue resolved successfully via wire reconnection.", choices: null },
-            res_schedule_installer_retry: { text: "Resolution: Schedule installer retry to inspect physical power paths and harness wiring.", choices: null },
-
-            q_globe_light: {
-                text: "Does it show Globe Light?",
-                choices: [
-                    { text: "Yes", next: "q_sim_active" },
-                    { text: "No", next: "res_verify_connections" }
-                ]
-            },
-            res_verify_connections: { 
-                text: "Resolution: Ask the client/driver to comprehensively verify all physical device cable connections, grounds, and terminal power lines.", 
-                choices: null 
-            },
-            q_sim_active: {
-                text: "Is the SIM active?",
-                choices: [
-                    { text: "Yes", next: "q_sim_swap" },
-                    { text: "No", next: "res_escalate_success_manager" }
-                ]
-            },
-            res_escalate_success_manager: { text: "Resolution: Escalate / Transfer technical support ticket internally with Success Manager to activate the SIM profile.", choices: null },
-
-            q_sim_swap: {
-                text: "Can client swap with active SIM?",
-                choices: [
-                    { text: "Yes", next: "q_swap_result" },
-                    { text: "No", next: "q_veyse_app" }
-                ]
-            },
-            q_swap_result: {
-                text: "After swapping working SIM, did it connect?",
-                choices: [
-                    { text: "Yes", next: "res_sim_replaced" },
-                    { text: "No", next: "q_veyse_app" }
-                ]
-            },
-            res_sim_replaced: { text: "Resolution: The physical SIM card has failed. Order and provision a new functional replacement module.", choices: null },
-
-            q_veyse_app: {
-                text: "Can client access Veyse app?",
-                choices: [
-                    { text: "Yes", next: "q_portal_check_yes" },
-                    { text: "No", next: "q_portal_check_no" }
-                ]
-            },
-            q_portal_check_yes: {
-                text: "Is the hardware added on portal?",
-                choices: [
-                    { text: "Yes", next: "res_installer_visit" },
-                    { text: "No", next: "q_try_press_reset" }
-                ]
-            },
-            q_try_press_reset: {
-                text: "Try to press the panic button 2-5 times to enable Hotspot.",
-                choices: [
-                    { text: "Yes", next: "q_wifi_connect_check" },
-                    { text: "No", next: "res_installer_visit" }
-                ]
-            },
-            q_wifi_connect_check: {
-                text: "Wi-Fi Connected?",
-                choices: [
-                    { text: "Yes", next: "q_signal_strength_check" },
-                    { text: "No", next: "res_installer_visit" }
-                ]
-            },
-            q_signal_strength_check: {
-                text: "Signal Strength showing?",
-                choices: [
-                    { text: "Strong / Connected", next: "q_server_status_check" },
-                    { text: "No Signal / Weak", next: "q_server_status_check" }
-                ]
-            },
-            q_server_status_check: {
-                text: "Navigate to Professional or Basic Setup -> Network -> COMMUNICATION MODULE. Does it show Current APN Settings?",
-                choices: [
-                    { text: "Yes", next: "res_apn_settings_flow" },
-                    { text: "No", next: "res_select_correct_apn" }
-                ]
-            },
-            res_apn_settings_flow: {
-                text: "Take Screenshot of below things and raise ticket with Zenduit/Veyse technical support unit: General or Device Module -> Parameters -> Server Settings -> Network -> Communication Module.",
-                choices: null
-            },
-            res_select_correct_apn: {
-                text: "Select the correct APN. After the APN update, do the device working fine? If Yes -> Issue resolved. If No -> Issue unresolved/escalate.",
+            camera_quality: {
+                text: "Camera Quality ( Resolution & Audio Issue )",
                 choices: null
             },
 
-            q_portal_check_no: {
-                text: "Is the hardware added on portal?",
+            rules_not_working: {
+                text: "Rules Not working",
+                choices: null
+            },
+
+            recording_issue: {
+                text: "Recording Issue",
                 choices: [
-                    { text: "Yes", next: "res_zenduit_ticket" },
-                    { text: "No", next: "q_raise_ticket_zenduit_add_device" }
+                    { text: "Not Recording", next: "not_recording" },
+                    { text: "intermittent Recording", next: "intermittent_recording" }
                 ]
             },
-            q_raise_ticket_zenduit_add_device: {
-                text: "Raise ticket with Zenduit to add the device on backend and frontend.",
+
+            not_recording: {
+                text: "Not Recording",
+                choices: null
+            },
+
+            intermittent_recording: {
+                text: "intermittent Recording",
+                choices: null
+            },
+
+            aux_camera: {
+                text: "Aux camera not showing",
+                choices: null
+            },
+
+            device_offline: {
+                text: "Does the device shows any Light ?",
                 choices: [
-                    { text: "Did the issue resolve after adding the device?", next: "q_resolved_after_adding" }
+                    { text: "Yes", next: "globe_light" },
+                    { text: "No", next: "installation_type" }
                 ]
             },
-            q_resolved_after_adding: {
-                text: "Issue resolved after adding the device?",
+
+            installation_type: {
+                text: "Select installation type",
                 choices: [
-                    { text: "Yes", next: "res_issue_resolved" },
-                    { text: "No", next: "res_schedule_installer_retry" }
+                    { text: "Trackcam Installer installation", next: "trackcam_installer" },
+                    { text: "Customer Installer Installation", next: "customer_installer" }
                 ]
             },
-            res_issue_resolved: { text: "Resolution: Device issue successfully resolved.", choices: null },
-            res_installer_visit: { text: "Resolution: Raise formal Installer Visit scheduling request to inspect the onsite physical device parameters.", choices: null },
-            res_zenduit_ticket: { text: "Resolution: Raise formal Support Ticket with Zenduit to append and link the hardware profile on the management backend and front-end interfaces.", choices: null }
+
+            customer_installer: {
+                text: "Ask for current Installation Pic or video ?",
+                choices: [
+                    { text: "Installation Looks Good ?", next: "installation_looks_good" }
+                ]
+            },
+
+            trackcam_installer: {
+                text: "Check Zoho Creator App",
+                choices: [
+                    { text: "Any Recent Changes in Vehicles ?", next: "recent_vehicle_changes" }
+                ]
+            },
+
+            installation_looks_good: {
+                text: "Installation Looks Good ?",
+                choices: [
+                    { text: "Yes", next: "installation_good_yes" },
+                    { text: "No", next: "installation_good_no" }
+                ]
+            },
+
+            installation_good_yes: {
+                text: "Yes",
+                choices: null
+            },
+
+            installation_good_no: {
+                text: "No",
+                choices: [
+                    { text: "Go back to Installation Looks Good ?", next: "installation_looks_good" },
+                    { text: "Schedule Customer Installer Visit", next: "schedule_customer_installer_visit" }
+                ]
+            },
+
+            schedule_customer_installer_visit: {
+                text: "Schedule Customer Installer Visit",
+                choices: null
+            },
+
+            recent_vehicle_changes: {
+                text: "Any Recent Changes in Vehicles ?",
+                choices: [
+                    { text: "is Geotab Installed ?", next: "geotab_installed" }
+                ]
+            },
+
+            geotab_installed: {
+                text: "is Geotab Installed ?",
+                choices: [
+                    { text: "Yes", next: "battery_voltage_check" },
+                    { text: "No", next: "disconnect_wires" }
+                ]
+            },
+
+            battery_voltage_check: {
+                text: "Can we verify the Battery voltage on Geotab portal ?",
+                choices: [
+                    { text: "Does it Shows any battery drop when the vehicle gets ignition On/Off ?", next: "battery_drop" }
+                ]
+            },
+
+            battery_drop: {
+                text: "Does it Shows any battery drop when the vehicle gets ignition On/Off ?",
+                choices: [
+                    { text: "No", next: "schedule_installer_battery" },
+                    { text: "Yes", next: "install_type" }
+                ]
+            },
+
+            schedule_installer_battery: {
+                text: "Schedule Installer Visit",
+                choices: null
+            },
+
+            install_type: {
+                text: "Is this Hardwire Install or T harness Installation ?",
+                choices: [
+                    { text: "T Harness", next: "disconnect_other_device" },
+                    { text: "Hardwire Install ?", next: "hardwire_resolution" }
+                ]
+            },
+
+            hardwire_resolution: {
+                text: "Schedule Installer Visit for Device swap or wire check",
+                choices: null
+            },
+
+            disconnect_other_device: {
+                text: "Can client disconnect other device a part from Camera ?",
+                choices: [
+                    { text: "Yes", next: "disconnect_other_device_yes" },
+                    { text: "No", next: "disconnect_other_device_no" }
+                ]
+            },
+
+            disconnect_other_device_yes: {
+                text: "Did it worked?",
+                choices: [
+                    { text: "Yes", next: "change_harness" },
+                    { text: "No", next: "connect_direct_obd" }
+                ]
+            },
+
+            disconnect_other_device_no: {
+                text: "No",
+                choices: null
+            },
+
+            change_harness: {
+                text: "Change Harness / replace power cable of camera",
+                choices: null
+            },
+
+            connect_direct_obd: {
+                text: "Connect the camera directly into OBD port",
+                choices: [
+                    { text: "Did it worked ?", next: "obd_result" }
+                ]
+            },
+
+            obd_result: {
+                text: "Did it worked ?",
+                choices: [
+                    { text: "Yes", next: "change_harness_after_obd" },
+                    { text: "No", next: "schedule_installer" }
+                ]
+            },
+
+            change_harness_after_obd: {
+                text: "Change Harness / replace power cable of camera",
+                choices: null
+            },
+
+            schedule_installer: {
+                text: "Schedule Installer",
+                choices: null
+            },
+
+            disconnect_wires: {
+                text: "Can Customer Disconnect and connect back the wires one by one",
+                choices: [
+                    { text: "Yes", next: "wire_reconnection_result" },
+                    { text: "No", next: "schedule_installer_visit" }
+                ]
+            },
+
+            wire_reconnection_result: {
+                text: "After connecting wire is the device working ?",
+                choices: [
+                    { text: "Yes", next: "issue_resolved_wire" },
+                    { text: "No", next: "schedule_installer_visit" }
+                ]
+            },
+
+            issue_resolved_wire: {
+                text: "issue resolved",
+                choices: null
+            },
+
+            schedule_installer_visit: {
+                text: "Schedule Installer Visit",
+                choices: null
+            },
+
+            globe_light: {
+                text: "Does it show Globe Light ?",
+                choices: [
+                    { text: "Yes", next: "sim_active" },
+                    { text: "No", next: "go_back_correct_option" }
+                ]
+            },
+
+            go_back_correct_option: {
+                text: "Please Go back and select the correct option",
+                choices: null
+            },
+
+            sim_active: {
+                text: "Is the SIM active",
+                choices: [
+                    { text: "Yes", next: "swap_sim" },
+                    { text: "No", next: "success_manager_escalation" }
+                ]
+            },
+
+            success_manager_escalation: {
+                text: "Escalate/Transfer ticket with Success Manager",
+                choices: null
+            },
+
+            swap_sim: {
+                text: "Can Client swap with an active SIM ?",
+                choices: [
+                    { text: "Yes", next: "swap_result" },
+                    { text: "No", next: "veyse_access" }
+                ]
+            },
+
+            swap_result: {
+                text: "After Swapping working Did it worked ?",
+                choices: [
+                    { text: "Yes", next: "sim_swap_resolved" },
+                    { text: "No", next: "sim_swap_no_resolution" }
+                ]
+            },
+
+            sim_swap_resolved: {
+                text: "Issue resolved",
+                choices: null
+            },
+
+            sim_swap_no_resolution: {
+                text: "No",
+                choices: null
+            },
+
+            veyse_access: {
+                text: "Can client access the Veyse app ?",
+                choices: [
+                    { text: "Yes", next: "veyse_login" },
+                    { text: "No", next: "portal_check" }
+                ]
+            },
+
+            portal_check: {
+                text: "Is the device added on portal ?",
+                choices: [
+                    { text: "Yes", next: "installer_visit_device" },
+                    { text: "No", next: "zenduit_add_device" }
+                ]
+            },
+
+            installer_visit_device: {
+                text: "Raise Installer Visit request to check the device",
+                choices: null
+            },
+
+            zenduit_add_device: {
+                text: "Raise Ticket With Zenduit to add the device on backend and front end",
+                choices: [
+                    { text: "Did the issue resolved after adding the device ?", next: "issue_after_adding" }
+                ]
+            },
+
+            issue_after_adding: {
+                text: "Did the issue resolved after adding the device ?",
+                choices: [
+                    { text: "Yes", next: "issue_resolved_after_adding" },
+                    { text: "No", next: "schedule_installer_after_adding" }
+                ]
+            },
+
+            issue_resolved_after_adding: {
+                text: "Issue resolved after adding the device",
+                choices: null
+            },
+
+            schedule_installer_after_adding: {
+                text: "Schedule Installer Visit",
+                choices: null
+            },
+
+            veyse_login: {
+                text: "Was the client able to login into Veyse app ?",
+                choices: [
+                    { text: "Yes", next: "sim_status" },
+                    { text: "No", next: "camera_wifi" }
+                ]
+            },
+
+            camera_wifi: {
+                text: "Is the camera wifi Connected to device ?",
+                choices: [
+                    { text: "Yes", next: "sim_status" },
+                    { text: "No", next: "panic_button" }
+                ]
+            },
+
+            panic_button: {
+                text: "Try to press the panic button 2-3 times to enable Wifi",
+                choices: [
+                    { text: "Yes", next: "camera_wifi_after_panic" },
+                    { text: "No", next: "installer_visit_device" }
+                ]
+            },
+
+            camera_wifi_after_panic: {
+                text: "Is the camera wifi Connected to device ?",
+                choices: [
+                    { text: "Yes", next: "camera_wifi_yes" },
+                    { text: "No", next: "panic_button" }
+                ]
+            },
+
+            camera_wifi_yes: {
+                text: "Is the camera wifi Connected to device ?",
+                choices: [
+                    { text: "Yes", next: "sim_status" },
+                    { text: "No", next: "panic_button" }
+                ]
+            },
+
+            sim_status: {
+                text: "What is SIM status on Veyese app ? (General >> Device Module)",
+                choices: [
+                    { text: "Not Existed", next: "sim_not_existed" },
+                    { text: "Existed", next: "sim_existed" }
+                ]
+            },
+
+            sim_not_existed: {
+                text: "Raise Installer Visit",
+                choices: null
+            },
+
+            sim_existed: {
+                text: "What is Signal Strength showing",
+                choices: [
+                    { text: "Showing 3+ Bars", next: "server_status" },
+                    { text: "Showing No Signal Bars", next: "communication_module" }
+                ]
+            },
+
+            server_status: {
+                text: "What is the Server Status ?",
+                choices: [
+                    { text: "Disconnected", next: "server_settings" },
+                    { text: "Connected", next: "server_connected_resolution" }
+                ]
+            },
+
+            server_settings: {
+                text: "Navigate to below path to update the Server Settings. Preference >> basic Setup >> Network >> Server Settings Check Server 1 should be enable only with correct settings.",
+                choices: [
+                    { text: "Did the device working and shows connected ?", next: "server_settings_result" }
+                ]
+            },
+
+            server_settings_result: {
+                text: "Did the device working and shows connected ?",
+                choices: [
+                    { text: "Yes", next: "issue_resolved_server" },
+                    { text: "No", next: "support_screenshot" }
+                ]
+            },
+
+            issue_resolved_server: {
+                text: "Issue Resolved",
+                choices: null
+            },
+
+            server_connected_resolution: {
+                text: "Take Screenshot of below things and raise ticket with Zenduit / also Schedule Installer visit. General >> Device Module. Preference >> basic Setup >> Network >> Server Settings Preference >> basic Setup >> Network >> Communication Module",
+                choices: null
+            },
+
+            communication_module: {
+                text: "Navigate to Preference >> Basic Setup >> Network >> Communication Module",
+                choices: [
+                    { text: "Does it shows Correct APN Settings ?", next: "apn_check" }
+                ]
+            },
+
+            apn_check: {
+                text: "Does it shows Correct APN Settings ?",
+                choices: [
+                    { text: "Yes", next: "support_screenshot" },
+                    { text: "No", next: "select_correct_apn" }
+                ]
+            },
+
+            select_correct_apn: {
+                text: "Select the Correct APN",
+                choices: [
+                    { text: "After the APN update, Did the device working fine ?", next: "apn_result" }
+                ]
+            },
+
+            apn_result: {
+                text: "After the APN update, Did the device working fine ?",
+                choices: [
+                    { text: "Yes", next: "issue_resolved_apn" },
+                    { text: "No", next: "support_screenshot" }
+                ]
+            },
+
+            issue_resolved_apn: {
+                text: "Issue resolved",
+                choices: null
+            },
+
+            support_screenshot: {
+                text: "Take Screenshot of below things and raise ticket with Zenduit / also Schedule Installer visit. General >> Device Module. Preference >> basic Setup >> Network >> Server Settings Preference >> basic Setup >> Network >> Communication Module",
+                choices: null
+            }
         };
 
-        let currentStep = 'start';
+        let currentStep = "start";
         let historyStack = [];
+
+        function escapeHtml(value) {
+            return String(value)
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
 
         function render() {
             const currentObj = flow[currentStep];
-            const displayEl = document.getElementById('question-text');
-            const answersDiv = document.getElementById('answers');
-            const navDiv = document.getElementById('navigation-controls');
-            
+            const displayEl = document.getElementById("question-text");
+            const answersDiv = document.getElementById("answers");
+            const navDiv = document.getElementById("navigation-controls");
+
+            if (!currentObj) {
+                displayEl.innerHTML = '<div class="resolution-box">Invalid flow node.</div>';
+                answersDiv.innerHTML = "";
+                navDiv.innerHTML = '<button class="btn-restart" onclick="resetFlow()">Restart Process</button>';
+                return;
+            }
+
             if (currentObj.choices === null) {
-                displayEl.innerHTML = `<div class="resolution-box">${currentObj.text}</div>`;
+                displayEl.innerHTML =
+                    `<div class="resolution-box">${escapeHtml(currentObj.text)}</div>`;
                 answersDiv.innerHTML = "";
                 navDiv.innerHTML = `
                     <button class="btn-back" onclick="goBack()">← Go Back</button>
                     <button class="btn-restart" onclick="resetFlow()">Restart Process</button>
                 `;
-            } else {
-                displayEl.innerText = currentObj.text;
-                let htmlContent = "";
-                
-                currentObj.choices.forEach(function(item, index) {
-                    htmlContent += `<button onclick="handleSelection(${index})">${item.text}</button>`;
-                });
-                answersDiv.innerHTML = htmlContent;
+                return;
+            }
 
-                if (historyStack.length > 0) {
-                    navDiv.innerHTML = `<button class="btn-back" onclick="goBack()">← Go Back</button>`;
-                } else {
-                    navDiv.innerHTML = "";
-                }
+            displayEl.innerText = currentObj.text;
+
+            let htmlContent = "";
+            currentObj.choices.forEach((item, index) => {
+                htmlContent +=
+                    `<button onclick="handleSelection(${index})">${escapeHtml(item.text)}</button>`;
+            });
+
+            answersDiv.innerHTML = htmlContent;
+
+            if (historyStack.length > 0) {
+                navDiv.innerHTML =
+                    `<button class="btn-back" onclick="goBack()">← Go Back</button>`;
+            } else {
+                navDiv.innerHTML = "";
             }
         }
 
         function handleSelection(index) {
             const currentObj = flow[currentStep];
+
+            if (!currentObj || !currentObj.choices || !currentObj.choices[index]) {
+                return;
+            }
+
+            const nextStep = currentObj.choices[index].next;
+
+            if (!flow[nextStep]) {
+                console.error(`Missing flow node: ${nextStep}`);
+                return;
+            }
+
             historyStack.push(currentStep);
-            currentStep = currentObj.choices[index].next;
+            currentStep = nextStep;
             render();
         }
 
@@ -370,7 +670,7 @@
         }
 
         function resetFlow() {
-            currentStep = 'start';
+            currentStep = "start";
             historyStack = [];
             render();
         }

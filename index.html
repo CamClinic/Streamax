@@ -112,6 +112,40 @@
             margin-bottom: 20px;
             line-height: 1.6;
         }
+    
+        .summary-box {
+            background: rgba(129, 140, 248, 0.08);
+            border: 1px solid #475569;
+            border-radius: 8px;
+            padding: 18px;
+            margin-top: 18px;
+            line-height: 1.7;
+        }
+
+        .summary-title {
+            font-size: 1.05rem;
+            font-weight: bold;
+            margin-bottom: 12px;
+            color: #f8fafc;
+        }
+
+        .summary-label {
+            font-weight: bold;
+            color: #7dd3fc;
+        }
+
+        .summary-path {
+            margin-top: 10px;
+            padding: 12px;
+            background: rgba(15, 23, 42, 0.45);
+            border-radius: 6px;
+            word-break: break-word;
+        }
+
+        .summary-action {
+            margin-top: 10px;
+        }
+
     </style>
 </head>
 <body>
@@ -591,6 +625,57 @@
 
         let currentStep = "start";
         let historyStack = [];
+        let pathStack = [];
+
+        function resetPath() {
+            pathStack = [{
+                stepId: "start",
+                question: flow.start ? flow.start.text : "Streamax Device issue",
+                answer: null
+            }];
+        }
+
+        function buildSummary() {
+            const issue = pathStack.length > 0
+                ? pathStack[0].answer || "Streamax Device issue"
+                : "Streamax Device issue";
+
+            const followed = pathStack.map((item, index) => {
+                if (index === 0) {
+                    return item.question;
+                }
+                return item.answer
+                    ? `${item.question} → ${item.answer}`
+                    : item.question;
+            }).join("  →  ");
+
+            const finalStep = flow[currentStep];
+            const finalSummary = finalStep ? finalStep.text : "Diagnostic path completed.";
+
+            return {
+                issue,
+                followed,
+                finalSummary
+            };
+        }
+
+        function renderSummary() {
+            const summary = buildSummary();
+            return `
+                <div class="summary-box">
+                    <div class="summary-title">Diagnostic Summary</div>
+                    <div><span class="summary-label">Issue:</span> ${escapeHtml(summary.issue)}</div>
+                    <div class="summary-path">
+                        <span class="summary-label">Path Followed:</span><br>
+                        ${escapeHtml(summary.followed)}
+                    </div>
+                    <div class="summary-action">
+                        <span class="summary-label">Summary:</span>
+                        ${escapeHtml(summary.finalSummary)}
+                    </div>
+                </div>
+            `;
+        }
 
         function escapeHtml(value) {
             return String(value)
@@ -615,8 +700,10 @@
             }
 
             if (currentObj.choices === null) {
-                displayEl.innerHTML =
-                    `<div class="resolution-box">${escapeHtml(currentObj.text)}</div>`;
+                displayEl.innerHTML = `
+                    <div class="resolution-box">${escapeHtml(currentObj.text)}</div>
+                    ${renderSummary()}
+                `;
                 answersDiv.innerHTML = "";
                 navDiv.innerHTML = `
                     <button class="btn-back" onclick="goBack()">← Go Back</button>
@@ -650,7 +737,8 @@
                 return;
             }
 
-            const nextStep = currentObj.choices[index].next;
+            const selected = currentObj.choices[index];
+            const nextStep = selected.next;
 
             if (!flow[nextStep]) {
                 console.error(`Missing flow node: ${nextStep}`);
@@ -658,6 +746,19 @@
             }
 
             historyStack.push(currentStep);
+
+            // Record the question and the exact option selected.
+            const pathEntry = pathStack[pathStack.length - 1];
+            if (pathEntry && !pathEntry.answer) {
+                pathEntry.answer = selected.text;
+            }
+
+            pathStack.push({
+                stepId: nextStep,
+                question: flow[nextStep].text,
+                answer: null
+            });
+
             currentStep = nextStep;
             render();
         }
@@ -665,6 +766,12 @@
         function goBack() {
             if (historyStack.length > 0) {
                 currentStep = historyStack.pop();
+
+                // Remove the current node from the recorded path.
+                if (pathStack.length > 1) {
+                    pathStack.pop();
+                }
+
                 render();
             }
         }
@@ -672,9 +779,11 @@
         function resetFlow() {
             currentStep = "start";
             historyStack = [];
+            resetPath();
             render();
         }
 
+        resetPath();
         render();
     </script>
 </body>

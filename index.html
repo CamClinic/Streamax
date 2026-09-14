@@ -121,30 +121,95 @@
                     { text: "Camera Quality (Resolution & Audio Issue)", next: "res_camera_quality" },
                     { text: "Rules Not working", next: "res_rules" },
                     { text: "Device Offline", next: "q_device_lights" },
-                    { text: "Not Recording", next: "res_recording" },
+                    { text: "Recording Issue", next: "q_recording_sub" },
                     { text: "Aux camera not showing", next: "res_aux" }
                 ]
             },
             
             res_camera_quality: { text: "Resolution: Inspect camera focus lenses, wipe external housing surfaces clean, and check microphone gains inside diagnostic parameters.", choices: null },
             res_rules: { text: "Resolution: Verify event triggers, reset cloud rule mapping templates, and push updated parameters to the terminal unit.", choices: null },
-            res_recording: { text: "Resolution: Check localized storage status indicators, verify SD/HDD write formatting parameters, and inspect partition errors.", choices: null },
             res_aux: { text: "Resolution: Check specialized multi-channel input connections, auxiliary power lines, and peripheral camera configuration setups.", choices: null },
+
+            q_recording_sub: {
+                text: "Select recording sub-category:",
+                choices: [
+                    { text: "Mainstream Recording", next: "res_mainstream_recording" },
+                    { text: "Not Recording", next: "res_recording" }
+                ]
+            },
+            res_mainstream_recording: { text: "Resolution: Verify main stream codec configurations, channel encoding bitrates, and storage stream allocations.", choices: null },
+            res_recording: { text: "Resolution: Check localized storage status indicators, verify SD/HDD write formatting parameters, and inspect partition errors.", choices: null },
 
             q_device_lights: {
                 text: "Does the device show any Light?",
                 choices: [
                     { text: "Yes", next: "q_globe_light" },
-                    { text: "No", next: "q_install_age" }
+                    { text: "No", next: "q_install_type" }
                 ]
             },
-            q_install_age: {
-                text: "What type of device environment is this?",
+
+            q_install_type: {
+                text: "What type of installation is this?",
                 choices: [
-                    { text: "Fresh Install", next: "res_verify_connections" },
-                    { text: "Old Device", next: "res_verify_connections" }
+                    { text: "Customer Installer Installation", next: "q_cust_installer_check" },
+                    { text: "Third-party Installer Installation", next: "q_third_party_check" }
                 ]
             },
+            q_cust_installer_check: {
+                text: "Ask for current installation photos?",
+                choices: [
+                    { text: "Yes", next: "q_installation_codes" },
+                    { text: "No", next: "res_select_correct_option" }
+                ]
+            },
+            res_select_correct_option: { text: "Resolution: Please Go back and select the correct option.", choices: null },
+            q_installation_codes: {
+                text: "Installation Codes Quest?",
+                choices: [
+                    { text: "Yes", next: "q_device_switched" },
+                    { text: "No", next: "res_select_correct_option" }
+                ]
+            },
+            q_third_party_check: {
+                text: "Check Zone Codes or Hardware?",
+                choices: [
+                    { text: "Yes", next: "q_recent_changes" },
+                    { text: "No", next: "res_select_correct_option" }
+                ]
+            },
+            q_recent_changes: {
+                text: "Any Recent Changes in Hardware?",
+                choices: [
+                    { text: "Yes", next: "q_device_switched" },
+                    { text: "No", next: "res_select_correct_option" }
+                ]
+            },
+            q_device_switched: {
+                text: "Is Device Switched?",
+                choices: [
+                    { text: "Yes", next: "res_notify_portal" },
+                    { text: "No", next: "q_disconnect_connect" }
+                ]
+            },
+            res_notify_portal: { text: "Resolution: Can notify the Primary contact via Geotab portal?", choices: null },
+            
+            q_disconnect_connect: {
+                text: "Can Disconnect and Connect back the wires one by one?",
+                choices: [
+                    { text: "Yes", next: "q_device_working_after_disconnect" },
+                    { text: "No", next: "res_schedule_installer_retry" }
+                ]
+            },
+            q_device_working_after_disconnect: {
+                text: "After connecting one by one, is the device working?",
+                choices: [
+                    { text: "Yes", next: "res_device_fixed_working" },
+                    { text: "No", next: "res_schedule_installer_retry" }
+                ]
+            },
+            res_device_fixed_working: { text: "Resolution: Device issue resolved successfully via wire reconnection.", choices: null },
+            res_schedule_installer_retry: { text: "Resolution: Schedule installer retry to inspect physical power paths and harness wiring.", choices: null },
+
             q_globe_light: {
                 text: "Does it show Globe Light?",
                 choices: [
@@ -157,7 +222,7 @@
                 choices: null 
             },
             q_sim_active: {
-                text: "Is the internal SIM profile verified as active?",
+                text: "Is the SIM active?",
                 choices: [
                     { text: "Yes", next: "q_sim_swap" },
                     { text: "No", next: "res_escalate_success_manager" }
@@ -166,14 +231,14 @@
             res_escalate_success_manager: { text: "Resolution: Escalate / Transfer technical support ticket internally with Success Manager to activate the SIM profile.", choices: null },
 
             q_sim_swap: {
-                text: "Can the client test a swap with an alternative known active SIM?",
+                text: "Can client swap with active SIM?",
                 choices: [
                     { text: "Yes", next: "q_swap_result" },
                     { text: "No", next: "q_veyse_app" }
                 ]
             },
             q_swap_result: {
-                text: "After swapping a working SIM into the device, did it connect?",
+                text: "After swapping working SIM, did it connect?",
                 choices: [
                     { text: "Yes", next: "res_sim_replaced" },
                     { text: "No", next: "q_veyse_app" }
@@ -182,19 +247,77 @@
             res_sim_replaced: { text: "Resolution: The physical SIM card has failed. Order and provision a new functional replacement module.", choices: null },
 
             q_veyse_app: {
-                text: "Can the client access the dedicated Veyse mobile application?",
+                text: "Can client access Veyse app?",
                 choices: [
-                    { text: "Yes", next: "q_portal_check" },
-                    { text: "No", next: "q_portal_check" }
+                    { text: "Yes", next: "q_portal_check_yes" },
+                    { text: "No", next: "q_portal_check_no" }
                 ]
             },
-            q_portal_check: {
-                text: "Is the specific hardware device item verified as added on the portal parameters?",
+            q_portal_check_yes: {
+                text: "Is the hardware added on portal?",
                 choices: [
                     { text: "Yes", next: "res_installer_visit" },
-                    { text: "No", next: "res_zenduit_ticket" }
+                    { text: "No", next: "q_try_press_reset" }
                 ]
             },
+            q_try_press_reset: {
+                text: "Try to press the panic button 2-5 times to enable Hotspot.",
+                choices: [
+                    { text: "Yes", next: "q_wifi_connect_check" },
+                    { text: "No", next: "res_installer_visit" }
+                ]
+            },
+            q_wifi_connect_check: {
+                text: "Wi-Fi Connected?",
+                choices: [
+                    { text: "Yes", next: "q_signal_strength_check" },
+                    { text: "No", next: "res_installer_visit" }
+                ]
+            },
+            q_signal_strength_check: {
+                text: "Signal Strength showing?",
+                choices: [
+                    { text: "Strong / Connected", next: "q_server_status_check" },
+                    { text: "No Signal / Weak", next: "q_server_status_check" }
+                ]
+            },
+            q_server_status_check: {
+                text: "Navigate to Professional or Basic Setup -> Network -> COMMUNICATION MODULE. Does it show Current APN Settings?",
+                choices: [
+                    { text: "Yes", next: "res_apn_settings_flow" },
+                    { text: "No", next: "res_select_correct_apn" }
+                ]
+            },
+            res_apn_settings_flow: {
+                text: "Take Screenshot of below things and raise ticket with Zenduit/Veyse technical support unit: General or Device Module -> Parameters -> Server Settings -> Network -> Communication Module.",
+                choices: null
+            },
+            res_select_correct_apn: {
+                text: "Select the correct APN. After the APN update, do the device working fine? If Yes -> Issue resolved. If No -> Issue unresolved/escalate.",
+                choices: null
+            },
+
+            q_portal_check_no: {
+                text: "Is the hardware added on portal?",
+                choices: [
+                    { text: "Yes", next: "res_zenduit_ticket" },
+                    { text: "No", next: "q_raise_ticket_zenduit_add_device" }
+                ]
+            },
+            q_raise_ticket_zenduit_add_device: {
+                text: "Raise ticket with Zenduit to add the device on backend and frontend.",
+                choices: [
+                    { text: "Did the issue resolve after adding the device?", next: "q_resolved_after_adding" }
+                ]
+            },
+            q_resolved_after_adding: {
+                text: "Issue resolved after adding the device?",
+                choices: [
+                    { text: "Yes", next: "res_issue_resolved" },
+                    { text: "No", next: "res_schedule_installer_retry" }
+                ]
+            },
+            res_issue_resolved: { text: "Resolution: Device issue successfully resolved.", choices: null },
             res_installer_visit: { text: "Resolution: Raise formal Installer Visit scheduling request to inspect the onsite physical device parameters.", choices: null },
             res_zenduit_ticket: { text: "Resolution: Raise formal Support Ticket with Zenduit to append and link the hardware profile on the management backend and front-end interfaces.", choices: null }
         };
